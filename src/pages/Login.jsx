@@ -30,7 +30,7 @@ export default function Login() {
       loginAccount.data !==
       'Cannot login: User does not exist. Please sign up instead.'
     ) {
-      navigate('/')
+      navigate('/calorie-counter')
     } else {
       setErrorMsg(loginAccount.data)
     }
