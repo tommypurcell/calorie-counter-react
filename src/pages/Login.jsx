@@ -1,3 +1,4 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -17,19 +18,16 @@ export default function Login() {
     setLoginAttempt(true)
 
     let loginAccount = await axios.post(
-      `${render_url}/login`,
+      `${local_url}/login`,
       {
         email: e.target.email.value,
-        password: e.target.password.value,
+        password: e.target.password.value
       },
       { withCredentials: true } // This is necessary to receive and send cookies
     )
 
     console.log(loginAccount.data)
-    if (
-      loginAccount.data !==
-      'Cannot login: User does not exist. Please sign up instead.'
-    ) {
+    if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
       navigate('/calorie-counter')
     } else {
       setErrorMsg(loginAccount.data)
@@ -46,23 +44,10 @@ export default function Login() {
             <div className="card-body container">
               <h4 className="text-danger">{errorMsg}</h4>
               <label>Email</label>
-              <input
-                name="email"
-                type="email"
-                className="border rounded form-control"
-                required={true}
-              />
+              <input name="email" type="email" className="border rounded form-control" required={true} />
               <label>Password</label>
-              <input
-                type="password"
-                className="border rounded form-control"
-                required={true}
-                name="password"
-              />
-              <button
-                type="submit"
-                className="login-button btn btn-success mt-3"
-              >
+              <input type="password" className="border rounded form-control" required={true} name="password" />
+              <button type="submit" className="login-button btn btn-success mt-3">
                 Login
               </button>
               <div>

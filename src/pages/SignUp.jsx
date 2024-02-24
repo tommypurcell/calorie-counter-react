@@ -1,3 +1,4 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -17,10 +18,10 @@ export default function SignUp() {
   const handleLoginAfterSignup = async (email, password) => {
     try {
       let loginAccount = await axios.post(
-        `${render_url}/login`,
+        `${local_url}/login`,
         {
           email: email,
-          password: password,
+          password: password
         },
         { withCredentials: true }
       )
@@ -35,25 +36,21 @@ export default function SignUp() {
   const makeAccount = async (e) => {
     e.preventDefault()
     try {
-      let newAccount = await axios.post(`${render_url}/signup`, {
+      let newAccount = await axios.post(`${local_url}/signup`, {
         name: e.target.fullName.value,
         email: e.target.email.value,
-        password: e.target.password.value,
+        password: e.target.password.value
       })
 
-      console.log('name', newAccount.data.name)
-
       if (newAccount.data === 'User with this email already exists') {
+        console.log(newAccount.data)
         setErrorMsg(newAccount.data)
       } else {
         // If the signup is successful, log in the user
-        await handleLoginAfterSignup(
-          newAccount.data.email,
-          newAccount.data.password
-        )
+        await handleLoginAfterSignup(newAccount.data.email, newAccount.data.password)
       }
     } catch (error) {
-      setErrorMsg('An error occurred during signup. Please try again later.')
+      null
     }
   }
 
@@ -63,31 +60,16 @@ export default function SignUp() {
         <form onSubmit={(e) => makeAccount(e)}>
           <div className="row text-start">Your Full Name</div>
           <div className="row">
-            <input
-              name="fullName"
-              type="text"
-              className="border rounded"
-              required
-            />
+            <input name="fullName" type="text" className="border rounded" required />
           </div>
 
           <div className="row text-start">Email</div>
           <div className="row">
-            <input
-              name="email"
-              type="email"
-              className="border rounded"
-              required
-            />
+            <input name="email" type="email" className="border rounded" required />
           </div>
           <div className="row text-start">Password</div>
           <div className="row">
-            <input
-              name="password"
-              type="password"
-              className="border rounded"
-              required
-            />
+            <input name="password" type="password" className="border rounded" required />
           </div>
           <button type="submit" className="btn btn-success row mt-3">
             Sign Up
@@ -102,9 +84,4 @@ export default function SignUp() {
       </div>
     </div>
   )
-
-  // keep the server open
-  app.listen(4000, () => {
-    console.log('Server is Listening.')
-  })
 }
