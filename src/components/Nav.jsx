@@ -15,7 +15,7 @@ export default function Nav() {
   // check if user is logged in
   const checkLogin = async () => {
     let user = await axios.get(`${render_url}/profile`)
-    if (user.data != 'Not authorized') {
+    if (user.data !== 'Not authorized') {
       setLoggedIn(true)
     } else {
       setLoggedIn(false)
@@ -37,25 +37,25 @@ export default function Nav() {
     <>
       {/* nav bar */}
       <nav className="logo-bar container">
-        <div className="d-flex flex-column flex-sm-column flex-md-row nav-div">
-          <Link to="/calorie-counter" className="m-2">
+        <div className="d-flex flex-column flex-md-row nav-div">
+          <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
             Calorie Counter
           </Link>
-          <Link to="/foodlog" className="m-2">
+          <Link to="/foodlog" className="m-2 w-100 text-center nav-button">
             Food Log
           </Link>
-          <Link to="/meal-plan-generator" className="m-2">
+          <Link to="/meal-plan-generator" className="m-2 w-100 text-center nav-button">
             Meal Plan Generator
           </Link>
-          <Link to="/stats" className="m-2">
+          <Link to="/stats" className="m-2 w-100 text-center nav-button">
             Stats
           </Link>
-          <Link to="/profile">Profile</Link>
+          <Link to="/profile" className='m-2 w-100 text-center nav-button '>Profile</Link>
           {loggedIn ? (
             <a
               onClick={(e) => requestLogout(e)}
               type="submit"
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-secondary m-2 w-100 text-center nav-button"
               style={{ height: 44, marginLeft: 5 }}
             >
               Logout
@@ -63,7 +63,7 @@ export default function Nav() {
           ) : (
             <a
               href="/login"
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-secondary m-2 w-100 text-center nav-button"
               style={{ height: 44, marginLeft: 5 }}
             >
               Login

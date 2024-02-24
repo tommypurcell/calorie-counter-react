@@ -39,6 +39,15 @@ body {
   padding: 3rem;
 }
 
+.nav-button {
+  height: 50px; /* Example height */
+  display: flex;
+  align-items: center; /* This centers the text vertically */
+  justify-content: center; /* This centers the text horizontally */
+  white-space: nowrap; /* Prevents text wrapping */
+}
+
+
 section {
   margin: 2rem 0 1rem 0;
 }
