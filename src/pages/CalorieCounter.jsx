@@ -19,22 +19,24 @@ export default function CalorieCounter() {
   const [selectedDate, setSelectedDate] = useState(``)
   const [dates, setDates] = useState([])
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userId, setUserId] = useState('')
 
   // check if user is logged in
   const checkLogin = async () => {
     console.log('checking login...')
     try {
-      let login = await axios.get(`${render_url}/profile`, {
+      let login = await axios.get(`${local_url}/profile`, {
         withCredentials: true,
         validateStatus: function (status) {
           return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        },
+        }
       })
       if (login.data == 'User not logged in') {
         console.log('user not logged in')
         setIsLoggedIn(false)
       } else {
         setIsLoggedIn(true)
+        setUserId(login._id)
       }
     } catch (err) {
       console.error('Error fetching profile:', err.message)
@@ -58,20 +60,17 @@ export default function CalorieCounter() {
 
   const getFoodData = async (e) => {
     e.preventDefault()
-    const response = await axios.get(
-      'https://api.edamam.com/api/nutrition-data',
-      {
-        params: {
-          app_id: applicationID,
-          app_key: applicationKey,
-          ingr: foodItem,
-        },
+    const response = await axios.get('https://api.edamam.com/api/nutrition-data', {
+      params: {
+        app_id: applicationID,
+        app_key: applicationKey,
+        ingr: foodItem
       }
-    )
+    })
 
     const newFoodItem = {
       name: foodItem,
-      calories: response.data.calories,
+      calories: response.data.calories
     }
     setFoodLog([newFoodItem, ...foodLog])
     setTotalCalories(totalCalories + response.data.calories)
@@ -79,17 +78,21 @@ export default function CalorieCounter() {
 
   // format selected date
   const formatDate = (date) => {
-    let newDate = date.split('-')
-    let year = newDate[0]
-    let month = newDate[1]
-    let day = newDate[2]
-    return `${month}/${day}/${year}`
+    if (date) {
+      let newDate = date.split('-')
+      let year = newDate[0]
+      let month = newDate[1]
+      let day = newDate[2]
+      return `${month}/${day}/${year}`
+    } else {
+      return null
+    }
   }
 
   // get dates from database and set state
   const getDates = async () => {
     let datesArr = []
-    const response = await axios.get(`${render_url}/foods`)
+    const response = await axios.get(`${local_url}/foods`)
     for (let item of response.data) {
       datesArr.push(item.date)
     }
@@ -99,11 +102,12 @@ export default function CalorieCounter() {
   // post food item to database
   const postFoodItems = async () => {
     for (let item of foodLog) {
-      const response = await axios.post(`${render_url}/foods`, {
+      const response = await axios.post(`${local_url}/foods`, {
+        userId: userId,
         name: item.name,
         calories: item.calories,
         date: selectedDate,
-        timestamp: Date.now(),
+        timestamp: Date.now()
       })
       console.log(response.data)
     }
@@ -134,8 +138,7 @@ export default function CalorieCounter() {
   const subtractCalories = (indexToSubtract, amount) => {
     // subtract calories from total
     setTotalCalories(totalCalories - amount)
-    foodLog[indexToSubtract].calories =
-      foodLog[indexToSubtract].calories - amount
+    foodLog[indexToSubtract].calories = foodLog[indexToSubtract].calories - amount
   }
 
   useEffect(() => {
@@ -148,16 +151,11 @@ export default function CalorieCounter() {
     <>
       {!isLoggedIn ? (
         <>
-          <Nav />
           <main className="calorie-counter-container">
             <form onSubmit={getFoodData}>
               <span>Enter Food item</span>
               <div>
-                <input
-                  type="text"
-                  value={foodItem}
-                  onChange={handleInputChange}
-                />
+                <input type="text" value={foodItem} onChange={handleInputChange} />
                 <button type="submit" className="submit-food">
                   Submit
                 </button>
@@ -170,37 +168,22 @@ export default function CalorieCounter() {
                     <p>Name: {item.name}</p>
                     <p>Calories: {item.calories} </p>
                     <div className="plus-minus">
-                      <a
-                        className="action-button"
-                        onClick={() => subtractCalories(index, 10)}
-                      >
+                      <a className="action-button" onClick={() => subtractCalories(index, 10)}>
                         - 10
                       </a>
-                      <a
-                        className="action-button shadow animate red"
-                        onClick={() => addCalories(index, 10)}
-                      >
+                      <a className="action-button shadow animate red" onClick={() => addCalories(index, 10)}>
                         + 10
                       </a>
                     </div>
                     <div className="plus-minus">
-                      <a
-                        className="action-button"
-                        onClick={() => subtractCalories(index, 100)}
-                      >
+                      <a className="action-button" onClick={() => subtractCalories(index, 100)}>
                         - 100
                       </a>
-                      <a
-                        className="action-button shadow animate red"
-                        onClick={() => addCalories(index, 100)}
-                      >
+                      <a className="action-button shadow animate red" onClick={() => addCalories(index, 100)}>
                         + 100
                       </a>
                     </div>
-                    <button
-                      className="removeFood"
-                      onClick={() => removeFoodItem(index)}
-                    >
+                    <button className="removeFood" onClick={() => removeFoodItem(index)}>
                       Remove
                     </button>
                   </article>
@@ -212,16 +195,11 @@ export default function CalorieCounter() {
         </>
       ) : (
         <>
-          <Nav />
           <main className="calorie-counter-container">
             <form onSubmit={getFoodData}>
               <span>Enter Food item</span>
               <div>
-                <input
-                  type="text"
-                  value={foodItem}
-                  onChange={handleInputChange}
-                />
+                <input type="text" value={foodItem} onChange={handleInputChange} />
                 <button type="submit" className="submit-food">
                   Submit
                 </button>
@@ -229,11 +207,7 @@ export default function CalorieCounter() {
             </form>
             <h2>
               Log foods eaten on{' '}
-              <select
-                className='"form-select form-select-lg mb-3"'
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              >
+              <select className='"form-select form-select-lg mb-3"' value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
                 <option value={today}>{formatDate(today)}</option>
                 {dates.map((item, index) => (
                   <option key={index} value={item}>
@@ -249,47 +223,30 @@ export default function CalorieCounter() {
                     <p>Name: {item.name}</p>
                     <p>Calories: {item.calories} </p>
                     <div className="plus-minus">
-                      <a
-                        className="action-button"
-                        onClick={() => subtractCalories(index, 10)}
-                      >
+                      <a className="action-button" onClick={() => subtractCalories(index, 10)}>
                         - 10
                       </a>
-                      <a
-                        className="action-button shadow animate red"
-                        onClick={() => addCalories(index, 10)}
-                      >
+                      <a className="action-button shadow animate red" onClick={() => addCalories(index, 10)}>
                         + 10
                       </a>
                     </div>
                     <div className="plus-minus">
-                      <a
-                        className="action-button"
-                        onClick={() => subtractCalories(index, 100)}
-                      >
+                      <a className="action-button" onClick={() => subtractCalories(index, 100)}>
                         - 100
                       </a>
-                      <a
-                        className="action-button shadow animate red"
-                        onClick={() => addCalories(index, 100)}
-                      >
+                      <a className="action-button shadow animate red" onClick={() => addCalories(index, 100)}>
                         + 100
                       </a>
                     </div>
-                    <button
-                      className="removeFood"
-                      onClick={() => removeFoodItem(index)}
-                    >
+                    <button className="removeFood" onClick={() => removeFoodItem(index)}>
                       Remove
                     </button>
                   </article>
                 </div>
               ))}
-              <h2>Total Calories: {totalCalories}</h2>
-              <button className="send-to-foodlog" onClick={postFoodItems}>
-                add to foodlog
-              </button>
             </div>
+            <h2>Total Calories: {totalCalories}</h2>
+            <button onClick={postFoodItems}>add to foodlog</button>
           </main>
         </>
       )}

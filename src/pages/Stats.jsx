@@ -2,14 +2,7 @@ import { useEffect, useState } from 'react'
 import React from 'react'
 import axios from 'axios'
 import Nav from '../components/Nav'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 const render_url = 'https://calorie-counter-api-portalversion.onrender.com'
 const local_url = 'http://localhost:4000'
@@ -28,7 +21,7 @@ export default function Stats() {
         withCredentials: true,
         validateStatus: function (status) {
           return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        },
+        }
       })
       if (login.data == 'User not logged in') {
         console.log('user not logged in')
@@ -51,7 +44,7 @@ export default function Stats() {
     for (let i = 0; i < calories.data.length; i++) {
       dataArr.push({
         date: calories.data[i].date,
-        calories: calories.data[i].totalCalories,
+        calories: calories.data[i].totalCalories
       })
     }
     // sort data by date
@@ -68,7 +61,6 @@ export default function Stats() {
 
   return (
     <>
-      <Nav />
       {isLoggedIn ? (
         <>
           <p className="text-center">Stats Page</p>

@@ -104,7 +104,6 @@ export default function CalorieCounter() {
 
   return (
     <>
-      <Nav />
       {isLoggedIn ? (
         <main className="food-log-container">
           <h1>This is the food log</h1>
@@ -122,26 +121,11 @@ export default function CalorieCounter() {
                           <p>Food: {food.name}</p>
                           <p>Calories: {food.calories}</p>
                           <div className="food-log-buttons">
-                            <button
-                              className="removeFood"
-                              onClick={() =>
-                                deleteFoodItem(dayIndex, foodIndex)
-                              }
-                            >
+                            <button className="removeFood" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
                               Remove
                             </button>
-                            <button
-                              onClick={() => addCalories(dayIndex, foodIndex)}
-                            >
-                              +10
-                            </button>
-                            <button
-                              onClick={() =>
-                                subtractCalories(dayIndex, foodIndex)
-                              }
-                            >
-                              -10
-                            </button>
+                            <button onClick={() => addCalories(dayIndex, foodIndex)}>+10</button>
+                            <button onClick={() => subtractCalories(dayIndex, foodIndex)}>-10</button>
                           </div>
                         </div>
                       ))}
@@ -151,13 +135,13 @@ export default function CalorieCounter() {
                 ))
               ) : (
                 // Render a message if foodLog is empty or not defined
-                <Link
-                  to="/calorie-counter"
-                  className="m-2 w-100 text-center nav-button"
-                >
-                  Your food log is currently empty because you have not logged
-                  any food.
-                </Link>
+                <div>
+                  <p>Your food log is currently empty because you have not logged any food.</p>
+
+                  <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
+                    Click here to start logging food!
+                  </Link>
+                </div>
               )}
             </div>
           </div>

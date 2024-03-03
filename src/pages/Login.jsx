@@ -1,14 +1,16 @@
+/* eslint-disable react/prop-types */
+
 import React from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 axios.defaults.withCredentials = true
 
 let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
 let local_url = 'http://localhost:4000'
 
-export default function Login() {
+export default function Login(props) {
   const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
   const [loginAttempt, setLoginAttempt] = useState(false)
@@ -16,7 +18,7 @@ export default function Login() {
   const requestLogin = async (e) => {
     e.preventDefault()
     setLoginAttempt(true)
-
+    props.onLogin()
     let loginAccount = await axios.post(
       `${local_url}/login`,
       {
@@ -38,7 +40,7 @@ export default function Login() {
     <>
       <div className="login-card card align-items-center position-absolute top-50 start-50 translate-middle w-50 h-auto p-5">
         <form onSubmit={(e) => requestLogin(e)}>
-          {loginAttempt && !errorMsg ? (
+          {props.loginAttempt && !errorMsg ? (
             <h1>Logging in. Please Wait...</h1>
           ) : (
             <div className="card-body container">
