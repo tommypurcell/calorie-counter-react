@@ -60,13 +60,13 @@ function App() {
       {/* Pass loggedIn state and handleLogout function as props to Nav */}
       <Nav loggedIn={loggedIn} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home loggedIn={loggedIn} />} />
+        <Route path="/stats" element={<Stats loggedIn={loggedIn} />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/foodlog" element={<FoodLog loggedIn={loggedIn} />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/foodlog" element={<FoodLog />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/calorie-counter" element={<CalorieCounter />} />
-        <Route path="/stats" element={<Stats />} />
         <Route path="/meal-plan-generator" element={<MealPlanGenerator />} />
       </Routes>
     </BrowserRouter>
