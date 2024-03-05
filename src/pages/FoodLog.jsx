@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 import React from 'react'
 import axios from 'axios'
 import { Params } from 'react-router-dom'
@@ -15,33 +17,14 @@ let local_url = 'http://localhost:4000'
 // create user login and authentication
 // ***************
 
-export default function CalorieCounter() {
+export default function FoodLog(props) {
   const applicationKey = '8803e138817c6dd9b43f6f0dcc52b9f1'
   const applicationID = '7b70e049'
   const [foodLog, setFoodLog] = useState([])
   const [date, setDate] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  // check if user is logged in
-  const checkLogin = async () => {
-    console.log('checking login...')
-    try {
-      let login = await axios.get(`${local_url}/profile`, {
-        withCredentials: true,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        }
-      })
-      if (login.data == 'User not logged in') {
-        console.log('user not logged in')
-        setIsLoggedIn(false)
-      } else {
-        setIsLoggedIn(true)
-      }
-    } catch (err) {
-      console.error('Error fetching profile:', err.message)
-    }
-  }
+  console.log(props.loggedIn)
+  console.log(props.foodLogChanged)
 
   // format date
   const formatDate = (date) => {
@@ -52,6 +35,7 @@ export default function CalorieCounter() {
     setDate(`${month}/${day}/${year}`)
   }
 
+  // get all foods for current logged in user
   const getFoods = async () => {
     const response = await axios.get(`${local_url}/foods`, {
       withCredentials: true
@@ -99,12 +83,18 @@ export default function CalorieCounter() {
 
   useEffect(() => {
     getFoods()
-    checkLogin()
   }, [])
+
+  useEffect(() => {
+    if (props.foodLogChanged) {
+      getFoods()
+      props.setFoodLogChanged(false)
+    }
+  }, [props.foodLogChanged])
 
   return (
     <>
-      {isLoggedIn ? (
+      {props.loggedIn ? (
         <main className="food-log-container">
           <h1>This is the food log</h1>
           <button onClick={(e) => getFoods(e)}>Get Foods</button>

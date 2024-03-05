@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 import React from 'react'
 import axios from 'axios'
 import { useState, useEffect } from 'react'
@@ -10,7 +12,7 @@ axios.defaults.withCredentials = true
 let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
 let local_url = 'http://localhost:4000'
 
-export default function CalorieCounter() {
+export default function CalorieCounter(props) {
   const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'
   const applicationID = '2dafcce0'
   const [foodItem, setFoodItem] = useState('')
@@ -109,10 +111,10 @@ export default function CalorieCounter() {
         date: selectedDate,
         timestamp: Date.now()
       })
-      console.log(response.data)
     }
     setFoodLog([])
     setTotalCalories(0)
+    props.setFoodLogChanged(true)
   }
 
   const handleInputChange = (e) => {

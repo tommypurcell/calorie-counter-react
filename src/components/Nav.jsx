@@ -31,6 +31,9 @@ export default function Nav(props) {
       {/* nav bar */}
       <nav className="logo-bar container">
         <div className="d-flex flex-column flex-md-row g-4 nav-div">
+          <Link to="/" className="m-2 w-100 text-center nav-button">
+            Home
+          </Link>
           <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
             Calorie Counter
           </Link>

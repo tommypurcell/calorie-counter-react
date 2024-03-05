@@ -30,7 +30,7 @@ export default function Login(props) {
 
     console.log(loginAccount.data)
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
-      navigate('/calorie-counter')
+      navigate('/')
     } else {
       setErrorMsg(loginAccount.data)
     }
