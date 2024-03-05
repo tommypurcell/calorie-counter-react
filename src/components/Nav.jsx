@@ -21,6 +21,11 @@ export default function Nav(props) {
     navigate('/login')
   }
 
+  // Inside your Nav component
+  useEffect(() => {
+    console.log('Login status changed:', props.loggedIn)
+  }, [props.loggedIn])
+
   return (
     <>
       {/* nav bar */}
@@ -38,21 +43,24 @@ export default function Nav(props) {
           <Link to="/stats" className="m-2 w-100 text-center nav-button position-relative">
             Stats
           </Link>
-          <Link to="/profile" className="m-2 w-100 text-center nav-button d-flex flex-row gap-2 position-relative align-items-center">
-            <img src="https://randomuser.me/api/portraits/men/33.jpg" alt="" className="rounded-circle h-100 m-0 w-auto" />
-            <span>Profile</span>
-            <span className="position-absolute top-0 start-100 translate-middle badge rounded bg-danger">
-              <span>1</span>
-            </span>
-          </Link>
+
+          {props.loggedIn ? (
+            <Link to="/profile" className="m-2 w-100 text-center nav-button d-flex flex-row gap-2 position-relative align-items-center">
+              <img src={props.profilePic} alt="profile headshot for nav menu" className="rounded-circle h-100 m-0 w-auto" />
+              <span>Profile</span>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded bg-danger">
+                <span>1</span>
+              </span>
+            </Link>
+          ) : null}
           {props.loggedIn ? (
             <a onClick={(e) => requestLogout(e)} type="submit" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
               Logout
             </a>
           ) : (
-            <a href="/login" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
+            <Link to="/login" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
               Login
-            </a>
+            </Link>
           )}
         </div>
       </nav>

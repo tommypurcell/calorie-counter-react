@@ -26,6 +26,7 @@ const local_url = 'http://localhost:4000'
 function App() {
   // State for managing logged-in status
   const [loggedIn, setLoggedIn] = useState(false)
+  const [profilePic, setProfilePic] = useState('')
 
   // Function to check if user is logged in
   const checkLogin = async () => {
@@ -33,6 +34,7 @@ function App() {
       let user = await axios.get(`${local_url}/profile`)
       if (user.data !== 'Not authorized') {
         setLoggedIn(true)
+        setProfilePic(user.data.avatar)
       } else {
         setLoggedIn(false)
       }
@@ -42,8 +44,20 @@ function App() {
   }
 
   // Set state of logged in to display nav button as loggedin or loggedout
-  const handleLogin = () => {
+
+  const handleLogin = async () => {
     setLoggedIn(true)
+    try {
+      let user = await axios.get(`${local_url}/profile`)
+      if (user.data !== 'Not authorized') {
+        setLoggedIn(true)
+        setProfilePic(user.data.avatar)
+      } else {
+        setLoggedIn(false)
+      }
+    } catch (err) {
+      console.error('Error checking login:', err.message)
+    }
   }
   const handleLogout = () => {
     setLoggedIn(false)
@@ -58,7 +72,7 @@ function App() {
     // Router
     <BrowserRouter>
       {/* Pass loggedIn state and handleLogout function as props to Nav */}
-      <Nav loggedIn={loggedIn} onLogout={handleLogout} />
+      <Nav loggedIn={loggedIn} onLogout={handleLogout} profilePic={profilePic} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
