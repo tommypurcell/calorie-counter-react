@@ -4,6 +4,7 @@ import { Params } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Nav from '../components/Nav'
 import { check } from 'prettier'
+import { Link } from 'react-router-dom'
 axios.defaults.withCredentials = true
 
 let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
@@ -25,11 +26,11 @@ export default function CalorieCounter() {
   const checkLogin = async () => {
     console.log('checking login...')
     try {
-      let login = await axios.get(`${render_url}/profile`, {
+      let login = await axios.get(`${local_url}/profile`, {
         withCredentials: true,
         validateStatus: function (status) {
           return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        },
+        }
       })
       if (login.data == 'User not logged in') {
         console.log('user not logged in')
@@ -52,8 +53,8 @@ export default function CalorieCounter() {
   }
 
   const getFoods = async () => {
-    const response = await axios.get(`${render_url}/foods`, {
-      withCredentials: true,
+    const response = await axios.get(`${local_url}/foods`, {
+      withCredentials: true
     })
     setFoodLog(response.data)
   }
@@ -61,7 +62,7 @@ export default function CalorieCounter() {
   // delete food item from database
   const deleteFoodItem = async (dayIndex, foodIndex) => {
     const idToDelete = foodLog[dayIndex].foods[foodIndex]._id
-    await axios.delete(`${render_url}/foods/${idToDelete}`)
+    await axios.delete(`${local_url}/foods/${idToDelete}`)
     getFoods()
   }
 
@@ -69,10 +70,10 @@ export default function CalorieCounter() {
   const addCalories = async (dayIndex, foodIndex) => {
     const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
     const caloriesToAdd = foodLog[dayIndex].foods[foodIndex].calories + 10
-    console.log(`axios patch request sent to ${render_url}/foods`)
-    await axios.patch(`${render_url}/foods`, {
+    console.log(`axios patch request sent to ${local_url}/foods`)
+    await axios.patch(`${local_url}/foods`, {
       id: idToUpdate,
-      calories: caloriesToAdd,
+      calories: caloriesToAdd
     })
     getFoods()
   }
@@ -81,9 +82,9 @@ export default function CalorieCounter() {
   const subtractCalories = async (dayIndex, foodIndex) => {
     const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
     const caloriesToSubtract = foodLog[dayIndex].foods[foodIndex].calories - 10
-    await axios.patch(`${render_url}/foods`, {
+    await axios.patch(`${local_url}/foods`, {
       id: idToUpdate,
-      calories: caloriesToSubtract,
+      calories: caloriesToSubtract
     })
     getFoods()
   }
@@ -103,47 +104,45 @@ export default function CalorieCounter() {
 
   return (
     <>
-      <Nav />
       {isLoggedIn ? (
         <main className="food-log-container">
           <h1>This is the food log</h1>
           <button onClick={(e) => getFoods(e)}>Get Foods</button>
           <div>
             <div className="day-of-food">
-              {foodLog.map((day, dayIndex) => (
-                <div key={dayIndex}>
-                  <h3>Date: {day.date}</h3>
-                  <section className="food-log-item">
-                    {day.foods.map((food, foodIndex) => (
-                      <div key={foodIndex}>
-                        <p>Food: {food.name}</p>
-                        <p>Calories: {food.calories}</p>
-                        <div className="food-log-buttons">
-                          <button
-                            className="removeFood"
-                            onClick={() => deleteFoodItem(dayIndex, foodIndex)}
-                          >
-                            Remove
-                          </button>
-                          <button
-                            onClick={() => addCalories(dayIndex, foodIndex)}
-                          >
-                            +10
-                          </button>
-                          <button
-                            onClick={() =>
-                              subtractCalories(dayIndex, foodIndex)
-                            }
-                          >
-                            -10
-                          </button>
+              {typeof foodLog === 'object' && foodLog.length > 0 ? (
+                // Render foodLog if it exists and is not empty
+                foodLog.map((day, dayIndex) => (
+                  <div key={dayIndex}>
+                    <h3>Date: {day.date}</h3>
+                    <section className="food-log-item">
+                      {day.foods.map((food, foodIndex) => (
+                        <div key={foodIndex}>
+                          <p>Food: {food.name}</p>
+                          <p>Calories: {food.calories}</p>
+                          <div className="food-log-buttons">
+                            <button className="removeFood" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
+                              Remove
+                            </button>
+                            <button onClick={() => addCalories(dayIndex, foodIndex)}>+10</button>
+                            <button onClick={() => subtractCalories(dayIndex, foodIndex)}>-10</button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <h2>Total Calories: {day.totalCalories}</h2>
-                  </section>
+                      ))}
+                      <h2>Total Calories: {day.totalCalories}</h2>
+                    </section>
+                  </div>
+                ))
+              ) : (
+                // Render a message if foodLog is empty or not defined
+                <div>
+                  <p>Your food log is currently empty because you have not logged any food.</p>
+
+                  <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
+                    Click here to start logging food!
+                  </Link>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </main>

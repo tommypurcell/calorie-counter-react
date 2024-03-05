@@ -234,3 +234,12 @@ select {
 .signup-card {
   box-shadow: 0 4px 8px 5px rgba(77, 77, 77, 0.15);
 }
+
+
+
+/* profile save button */
+
+.saveEdits {
+  white-space: nowrap;
+
+}

@@ -1,34 +1,84 @@
-import logo from './logo.svg'
+// imports
 import './App.css'
-import House from './pages/House'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import FoodLog from './pages/FoodLog'
-import SignUp from './pages/SignUp'
-import HouseCreate from './pages/HouseCreate'
-import HouseEdit from './pages/HouseEdit'
-import Stats from './pages/Stats'
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import React from 'react'
-import HouseThumbnail from './components/HouseThumbnail'
-import MealPlanGenerator from './pages/MealPlanGenerator'
-import CalorieCounter from './pages/CalorieCounter'
+import axios from 'axios'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+// import pages
+import Stats from './pages/Stats'
+import Login from './pages/Login'
+import SignUp from './pages/SignUp'
+import Profile from './pages/Profile'
+import Home from './pages/Home'
+import FoodLog from './pages/FoodLog'
 import LandingPage from './pages/LandingPage'
+import CalorieCounter from './pages/CalorieCounter'
+import MealPlanGenerator from './pages/MealPlanGenerator'
+
+// import components
+import Nav from './components/Nav'
+
+// Set up axios configurations
+axios.defaults.withCredentials = true
+const local_url = 'http://localhost:4000'
 
 function App() {
+  // State for managing logged-in status
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [profilePic, setProfilePic] = useState('')
+
+  // Function to check if user is logged in
+  const checkLogin = async () => {
+    try {
+      let user = await axios.get(`${local_url}/profile`)
+      if (user.data !== 'Not authorized') {
+        setLoggedIn(true)
+        setProfilePic(user.data.avatar)
+      } else {
+        setLoggedIn(false)
+      }
+    } catch (err) {
+      console.error('Error checking login:', err.message)
+    }
+  }
+
+  // Set state of logged in to display nav button as loggedin or loggedout
+
+  const handleLogin = async () => {
+    setLoggedIn(true)
+    try {
+      let user = await axios.get(`${local_url}/profile`)
+      if (user.data !== 'Not authorized') {
+        setLoggedIn(true)
+        setProfilePic(user.data.avatar)
+      } else {
+        setLoggedIn(false)
+      }
+    } catch (err) {
+      console.error('Error checking login:', err.message)
+    }
+  }
+  const handleLogout = () => {
+    setLoggedIn(false)
+  }
+
+  // Effect hook to check login status on mount
+  useEffect(() => {
+    checkLogin()
+  }, [])
+
   return (
     // Router
     <BrowserRouter>
+      {/* Pass loggedIn state and handleLogout function as props to Nav */}
+      <Nav loggedIn={loggedIn} onLogout={handleLogout} profilePic={profilePic} />
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/house/:id" element={<House />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/house-create" element={<HouseCreate />} />
-        <Route path="/house-edit" element={<HouseEdit />} />
         <Route path="/foodlog" element={<FoodLog />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/calorie-counter" element={<CalorieCounter />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/meal-plan-generator" element={<MealPlanGenerator />} />

@@ -10,9 +10,7 @@ export default function MealPlanGenerator() {
   const [calories, setCalories] = useState(2000)
 
   async function getMealData() {
-    const response = await fetch(
-      `https://api.spoonacular.com/mealplanner/generate?apiKey=${apiKey}&timeFrame=day&targetCalories=${calories}`
-    )
+    const response = await fetch(`https://api.spoonacular.com/mealplanner/generate?apiKey=${apiKey}&timeFrame=day&targetCalories=${calories}`)
 
     const data = await response.json()
     setMealData(data)
@@ -26,13 +24,8 @@ export default function MealPlanGenerator() {
   return (
     <>
       <div className="App">
-        <Nav />
         <section className="controls">
-          <input
-            type="number"
-            placeholder="Calories (e.g. 2000)"
-            onChange={handleChange}
-          />
+          <input type="number" placeholder="Calories (e.g. 2000)" onChange={handleChange} />
           <button onClick={getMealData}>Get Daily Meal Plan</button>
         </section>
         {mealData && <MealList mealData={mealData} />}

@@ -1,12 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import House from './pages/House'
-import MealPlanGenerator from './pages/MealPlanGenerator'
-import HouseCreate from './pages/HouseCreate'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import SignUp from './pages/SignUp'
 import reportWebVitals from './reportWebVitals'
 import App from './App'
 

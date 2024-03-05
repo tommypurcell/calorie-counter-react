@@ -16,12 +16,8 @@ export default function LandingPage() {
   const blobUrl = process.env.PUBLIC_URL + '/images/blob.svg'
   return (
     <>
-      <Nav />
       {/* Add the link tag to include the CSS file */}
-      <link
-        rel="stylesheet"
-        href={process.env.PUBLIC_URL + '/styles/landingpage.css'}
-      />
+      <link rel="stylesheet" href={process.env.PUBLIC_URL + '/styles/landingpage.css'} />
       <section>
         <div className="container">
           <div className="row">
