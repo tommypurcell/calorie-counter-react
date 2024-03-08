@@ -27,12 +27,11 @@ function Home(props) {
           <div className="col">
             <Card setFoodLogChanged={setFoodLogChanged} />
           </div>
-          <div className="col">
+          <div className="food-log-container">
             <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} />
           </div>
         </div>
       </div>
-      <div className="flex justify-center h-20 mt-10 pt-10 border-t border-gray-100"></div>
     </div>
   )
 }

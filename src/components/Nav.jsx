@@ -34,12 +34,6 @@ export default function Nav(props) {
           <Link to="/" className="m-2 w-100 text-center nav-button">
             Home
           </Link>
-          <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
-            Calorie Counter
-          </Link>
-          <Link to="/foodlog" className="m-2 w-100 text-center nav-button">
-            Food Log
-          </Link>
           <Link to="/meal-plan-generator" className="m-2 w-100 text-center nav-button">
             Meal Plan Generator
           </Link>

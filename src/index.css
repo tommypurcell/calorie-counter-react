@@ -47,7 +47,6 @@ body {
   white-space: nowrap; /* Prevents text wrapping */
 }
 
-
 section {
   margin: 2rem 0 1rem 0;
 }
@@ -235,11 +234,13 @@ select {
   box-shadow: 0 4px 8px 5px rgba(77, 77, 77, 0.15);
 }
 
-
-
 /* profile save button */
 
 .saveEdits {
   white-space: nowrap;
+}
 
+.food-log-container {
+  height: 500px; /* Adjust the height as needed */
+  overflow-y: scroll; /* Enables vertical scrolling */
 }
