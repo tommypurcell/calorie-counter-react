@@ -9,7 +9,7 @@ import { check } from 'prettier'
 import { Link } from 'react-router-dom'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 // ***************
@@ -37,7 +37,7 @@ export default function FoodLog(props) {
 
   // get all foods for current logged in user
   const getFoods = async () => {
-    const response = await axios.get(`${local_url}/foods`, {
+    const response = await axios.get(`${render_url}/foods`, {
       withCredentials: true
     })
     setFoodLog(response.data)
@@ -46,7 +46,7 @@ export default function FoodLog(props) {
   // delete food item from database
   const deleteFoodItem = async (dayIndex, foodIndex) => {
     const idToDelete = foodLog[dayIndex].foods[foodIndex]._id
-    await axios.delete(`${local_url}/foods/${idToDelete}`)
+    await axios.delete(`${render_url}/foods/${idToDelete}`)
     getFoods()
   }
 
@@ -54,8 +54,8 @@ export default function FoodLog(props) {
   const addCalories = async (dayIndex, foodIndex) => {
     const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
     const caloriesToAdd = foodLog[dayIndex].foods[foodIndex].calories + 10
-    console.log(`axios patch request sent to ${local_url}/foods`)
-    await axios.patch(`${local_url}/foods`, {
+    console.log(`axios patch request sent to ${render_url}/foods`)
+    await axios.patch(`${render_url}/foods`, {
       id: idToUpdate,
       calories: caloriesToAdd
     })
@@ -66,7 +66,7 @@ export default function FoodLog(props) {
   const subtractCalories = async (dayIndex, foodIndex) => {
     const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
     const caloriesToSubtract = foodLog[dayIndex].foods[foodIndex].calories - 10
-    await axios.patch(`${local_url}/foods`, {
+    await axios.patch(`${render_url}/foods`, {
       id: idToUpdate,
       calories: caloriesToSubtract
     })

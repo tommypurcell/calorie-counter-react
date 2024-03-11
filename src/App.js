@@ -22,6 +22,7 @@ import Nav from './components/Nav'
 // Set up axios configurations
 axios.defaults.withCredentials = true
 const local_url = 'http://localhost:4000'
+const render_url = 'https://calorie-counter-api-singapore.onrender.com'
 
 function App() {
   // State for managing logged-in status
@@ -31,7 +32,9 @@ function App() {
   // Function to check if user is logged in
   const checkLogin = async () => {
     try {
-      let user = await axios.get(`${local_url}/profile`)
+      let user = await axios.get(`${render_url}/profile`, {
+        withCredentials: true
+      })
       if (user.data !== 'Not authorized') {
         setLoggedIn(true)
         setProfilePic(user.data.avatar)
@@ -48,7 +51,7 @@ function App() {
   const handleLogin = async () => {
     setLoggedIn(true)
     try {
-      let user = await axios.get(`${local_url}/profile`)
+      let user = await axios.get(`${render_url}/profile`)
       if (user.data !== 'Not authorized') {
         setLoggedIn(true)
         setProfilePic(user.data.avatar)

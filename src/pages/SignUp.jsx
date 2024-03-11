@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 export default function SignUp() {
@@ -18,7 +18,7 @@ export default function SignUp() {
   const handleLoginAfterSignup = async (email, password) => {
     try {
       let loginAccount = await axios.post(
-        `${local_url}/login`,
+        `${render_url}/login`,
         {
           email: email,
           password: password
@@ -36,7 +36,7 @@ export default function SignUp() {
   const makeAccount = async (e) => {
     e.preventDefault()
     try {
-      let newAccount = await axios.post(`${local_url}/signup`, {
+      let newAccount = await axios.post(`${render_url}/signup`, {
         name: e.target.fullName.value,
         email: e.target.email.value,
         password: e.target.password.value

@@ -7,27 +7,23 @@ import { useNavigate } from 'react-router-dom'
 import React from 'react'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
-let local_url = 'http://localhost:4000'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
+let local_url = 'http://localhost:4100'
 
 export default function Profile() {
   // create state variable for user
   const [user, setUser] = useState({})
   const [profile, setProfile] = useState({})
 
-  // define houses
-  const [houses, setHouses] = useState([])
-
   const getProfile = async () => {
     try {
-      let profile = await axios.get(`${local_url}/profile`, {
-        withCredentials: true
+      const response = await axios.get(`${render_url}/profile`, {
+        withCredentials: true // Include credentials in the request
       })
-      console.log(profile.data)
-      setProfile(profile.data)
-      return profile.data
-    } catch (err) {
-      console.error('Error fetching profile:', err.message)
+      console.log('Response:', response)
+      setProfile(response.data)
+    } catch (error) {
+      alert(error.message)
     }
   }
 
@@ -42,7 +38,7 @@ export default function Profile() {
       }
 
       console.log(updatedProfile)
-      await axios.patch(`${local_url}/profile`, updatedProfile)
+      await axios.patch(`${render_url}/profile`, updatedProfile)
     } catch (err) {
       console.error('Error fetching profile:', err.message)
     }

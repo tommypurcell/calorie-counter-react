@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import React, { Component } from 'react'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 export default function Nav(props) {
@@ -15,7 +15,7 @@ export default function Nav(props) {
 
   const requestLogout = async (e) => {
     e.preventDefault()
-    let userToLogout = await axios.get(`${local_url}/logout`)
+    let userToLogout = await axios.get(`${render_url}/logout`)
     console.log(userToLogout.data)
     props.onLogout()
     navigate('/login')

@@ -6,7 +6,7 @@ import axios from 'axios'
 import Nav from '../components/Nav'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ReferenceLine, CartesianGrid } from 'recharts'
 
-const render_url = 'https://calorie-counter-api-portalversion.onrender.com'
+const render_url = 'https://calorie-counter-api-singapore.onrender.com'
 const local_url = 'http://localhost:4000'
 
 export default function Stats(props) {
@@ -17,7 +17,7 @@ export default function Stats(props) {
 
   // get calorie data
   const getCalories = async () => {
-    let calories = await axios.get(`${local_url}/foods`)
+    let calories = await axios.get(`${render_url}/foods`)
     setFoodData(calories.data)
 
     // create data array

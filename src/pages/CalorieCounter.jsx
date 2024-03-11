@@ -9,7 +9,7 @@ axios.defaults.withCredentials = true
 // trying this one using edamam instead of spoonacular
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 export default function CalorieCounter(props) {
@@ -27,7 +27,7 @@ export default function CalorieCounter(props) {
   const checkLogin = async () => {
     console.log('checking login...')
     try {
-      let login = await axios.get(`${local_url}/profile`, {
+      let login = await axios.get(`${render_url}/profile`, {
         withCredentials: true,
         validateStatus: function (status) {
           return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
@@ -94,7 +94,7 @@ export default function CalorieCounter(props) {
   // get dates from database and set state
   const getDates = async () => {
     let datesArr = []
-    const response = await axios.get(`${local_url}/foods`)
+    const response = await axios.get(`${render_url}/foods`)
     for (let item of response.data) {
       datesArr.push(item.date)
     }
@@ -104,7 +104,7 @@ export default function CalorieCounter(props) {
   // post food item to database
   const postFoodItems = async () => {
     for (let item of foodLog) {
-      const response = await axios.post(`${local_url}/foods`, {
+      const response = await axios.post(`${render_url}/foods`, {
         userId: userId,
         name: item.name,
         calories: item.calories,

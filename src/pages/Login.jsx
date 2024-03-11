@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
-let local_url = 'http://localhost:4000'
+let render_url = 'https://calorie-counter-api-singapore.onrender.com'
+let local_url = 'http://localhost:4100'
 
 export default function Login(props) {
   const navigate = useNavigate()
@@ -20,7 +20,7 @@ export default function Login(props) {
     setLoginAttempt(true)
     props.onLogin()
     let loginAccount = await axios.post(
-      `${local_url}/login`,
+      `${render_url}/login`,
       {
         email: e.target.email.value,
         password: e.target.password.value
@@ -28,9 +28,10 @@ export default function Login(props) {
       { withCredentials: true } // This is necessary to receive and send cookies
     )
 
-    console.log(loginAccount.data)
+    console.log(JSON.stringify(loginAccount)) // Convert object to JSON string
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
-      navigate('/')
+      // navigate('/')
+      console.log('message', loginAccount)
     } else {
       setErrorMsg(loginAccount.data)
     }
