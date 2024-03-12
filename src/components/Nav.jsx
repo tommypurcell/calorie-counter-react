@@ -10,19 +10,23 @@ let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 export default function Nav(props) {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  console.log(props)
   const navigate = useNavigate()
 
   const requestLogout = async (e) => {
     e.preventDefault()
+
     let userToLogout = await axios.get(`${render_url}/logout`)
-    console.log(userToLogout.data)
-    props.onLogout()
+
+    localStorage.removeItem('isLoggedIn')
     navigate('/login')
   }
 
   // Inside your Nav component
   useEffect(() => {
-    console.log('Login status changed:', props.loggedIn)
+    const isLoggedIn = localStorage.getItem('isLoggedIn')
+    console.log('Login status changed:', isLoggedIn)
   }, [props.loggedIn])
 
   return (
@@ -77,7 +81,7 @@ export default function Nav(props) {
               </span>
             </NavLink>
           ) : null}
-          {props.loggedIn ? (
+          {isLoggedIn ? (
             <a onClick={(e) => requestLogout(e)} type="submit" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
               Logout
             </a>

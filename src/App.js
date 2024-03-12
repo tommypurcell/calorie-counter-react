@@ -36,10 +36,9 @@ function App() {
         withCredentials: true
       })
       if (user.data !== 'Not authorized') {
-        setLoggedIn(true)
+        localStorage.setItem('isLoggedIn', true)
+        console.log('avatar:', user.data.avatar)
         setProfilePic(user.data.avatar)
-      } else {
-        setLoggedIn(false)
       }
     } catch (err) {
       console.error('Error checking login:', err.message)
@@ -47,24 +46,6 @@ function App() {
   }
 
   // Set state of logged in to display nav button as loggedin or loggedout
-
-  const handleLogin = async () => {
-    setLoggedIn(true)
-    try {
-      let user = await axios.get(`${render_url}/profile`)
-      if (user.data !== 'Not authorized') {
-        setLoggedIn(true)
-        setProfilePic(user.data.avatar)
-      } else {
-        setLoggedIn(false)
-      }
-    } catch (err) {
-      console.error('Error checking login:', err.message)
-    }
-  }
-  const handleLogout = () => {
-    setLoggedIn(false)
-  }
 
   // Effect hook to check login status on mount
   useEffect(() => {
@@ -75,11 +56,11 @@ function App() {
     // Router
     <BrowserRouter>
       {/* Pass loggedIn state and handleLogout function as props to Nav */}
-      <Nav loggedIn={loggedIn} onLogout={handleLogout} profilePic={profilePic} />
+      <Nav profilePic={profilePic} />
       <Routes>
-        <Route path="/" element={<Home loggedIn={loggedIn} />} />
-        <Route path="/stats" element={<Stats loggedIn={loggedIn} />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/stats" element={<Stats />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<SignUp />} />
         {/* <Route path="/meal-plan-generator" element={<MealPlanGenerator />} /> */}

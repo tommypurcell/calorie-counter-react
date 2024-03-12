@@ -10,10 +10,10 @@ const render_url = 'https://calorie-counter-api-singapore.onrender.com'
 const local_url = 'http://localhost:4000'
 
 export default function Stats(props) {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
   // state variable
   const [foodData, setFoodData] = useState([])
   const [data, setData] = useState([])
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   // get calorie data
   const getCalories = async () => {
@@ -41,7 +41,7 @@ export default function Stats(props) {
 
   return (
     <>
-      {props.loggedIn ? (
+      {isLoggedIn ? (
         <>
           <p className="text-center">Stats Page</p>
           <div className="d-flex justify-content-center">

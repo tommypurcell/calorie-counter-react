@@ -13,12 +13,10 @@ let local_url = 'http://localhost:4100'
 export default function Login(props) {
   const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
-  const [loginAttempt, setLoginAttempt] = useState(false)
 
   const requestLogin = async (e) => {
     e.preventDefault()
-    setLoginAttempt(true)
-    props.onLogin()
+
     let loginAccount = await axios.post(
       `${render_url}/login`,
       {
@@ -30,8 +28,9 @@ export default function Login(props) {
 
     console.log(JSON.stringify(loginAccount)) // Convert object to JSON string
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
-      // navigate('/')
+      navigate('/')
       console.log('message', loginAccount)
+      localStorage.setItem('isLoggedIn', true)
     } else {
       setErrorMsg(loginAccount.data)
     }

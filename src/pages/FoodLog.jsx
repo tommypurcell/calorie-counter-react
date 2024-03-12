@@ -18,12 +18,12 @@ let local_url = 'http://localhost:4000'
 // ***************
 
 export default function FoodLog(props) {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
   const applicationKey = '8803e138817c6dd9b43f6f0dcc52b9f1'
   const applicationID = '7b70e049'
   const [foodLog, setFoodLog] = useState([])
   const [date, setDate] = useState('')
 
-  console.log(props.loggedIn)
   console.log(props.foodLogChanged)
 
   // format date
@@ -94,7 +94,7 @@ export default function FoodLog(props) {
 
   return (
     <>
-      {props.loggedIn ? (
+      {isLoggedIn ? (
         <main className="food-log-container">
           <h1>This is the food log</h1>
           <button onClick={(e) => getFoods(e)}>Get Foods</button>
