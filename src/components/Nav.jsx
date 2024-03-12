@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -10,7 +10,6 @@ let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4000'
 
 export default function Nav(props) {
-  console.log(props.loggedIn)
   const navigate = useNavigate()
 
   const requestLogout = async (e) => {
@@ -31,33 +30,61 @@ export default function Nav(props) {
       {/* nav bar */}
       <nav className="logo-bar container">
         <div className="d-flex flex-column flex-md-row g-4 nav-div">
-          <Link to="/" className="m-2 w-100 text-center nav-button">
+          <NavLink
+            to="/"
+            style={({ isActive }) => ({
+              color: isActive ? '#fff' : '',
+              background: isActive ? '#7600dc' : ''
+            })}
+            className="m-2 w-100 text-center nav-button"
+          >
             Home
-          </Link>
-          <Link to="/meal-plan-generator" className="m-2 w-100 text-center nav-button">
+          </NavLink>
+          {/* <NavLink
+            to="/meal-plan-generator"
+            style={({ isActive }) => ({
+              color: isActive ? '#fff' : '',
+              background: isActive ? '#7600dc' : ''
+            })}
+            className="m-2 w-100 text-center nav-button"
+          >
             Meal Plan Generator
-          </Link>
-          <Link to="/stats" className="m-2 w-100 text-center nav-button position-relative">
+          </NavLink> */}
+          <NavLink
+            to="/stats"
+            style={({ isActive }) => ({
+              color: isActive ? '#fff' : '',
+              background: isActive ? '#7600dc' : ''
+            })}
+            className="m-2 w-100 text-center nav-button position-relative"
+          >
             Stats
-          </Link>
+          </NavLink>
 
-          {props.loggedIn ? (
-            <Link to="/profile" className="m-2 w-100 text-center nav-button d-flex flex-row gap-2 position-relative align-items-center">
+          {isLoggedIn ? (
+            <NavLink
+              to="/profile"
+              style={({ isActive }) => ({
+                color: isActive ? '#fff' : '',
+                background: isActive ? '#7600dc' : ''
+              })}
+              className="m-2 w-100 text-center nav-button d-flex flex-row gap-2 position-relative align-items-center"
+            >
               <img src={props.profilePic} alt="profile headshot for nav menu" className="rounded-circle h-100 m-0 w-auto" />
               <span>Profile</span>
               <span className="position-absolute top-0 start-100 translate-middle badge rounded bg-danger">
                 <span>1</span>
               </span>
-            </Link>
+            </NavLink>
           ) : null}
           {props.loggedIn ? (
             <a onClick={(e) => requestLogout(e)} type="submit" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
               Logout
             </a>
           ) : (
-            <Link to="/login" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
+            <NavLink to="/login" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
               Login
-            </Link>
+            </NavLink>
           )}
         </div>
       </nav>
