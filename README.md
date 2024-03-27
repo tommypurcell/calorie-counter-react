@@ -22,26 +22,6 @@ Welcome to the **Calorie Counter React** project repository! This is a simple we
 - **Dashboard Visualization**: Visualize your daily calorie intake with informative charts and graphs.
 - **Responsive Design**: The app is designed to work seamlessly on both desktop and mobile devices.
 
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/tommypurcell/calorie-counter-react.git
-```
-
-1. Navigate to the project directory:
-
-```bash
-cd calorie-counter-react
-```
-
-1. Install the required dependencies:
-
-```bash
-npm install
-```
-
 ## Usage
 
 1. Start the development server:
