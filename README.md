@@ -6,7 +6,7 @@
 
 Welcome to the **Calorie Counter React** project repository! This is a simple web application built using React that allows users to track and manage their daily calorie intake. Whether you're trying to maintain a healthy lifestyle or achieve specific fitness goals, this app can help you keep tabs on your calorie consumption.
 
-![Calorie Counter](/public/images/Screen%20Shot%202023-08-09%20at%209.02.16%20PM.png)
+![Calorie Counter](https://github.com/tommypurcell/calorie-counter-react/raw/master/public/images/Screen%20Shot%202023-08-09%20at%209.02.16%20PM.png)
 
 ## Table of Contents
 
