@@ -63,6 +63,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/landing-page" element={<LandingPage />} />
         {/* <Route path="/meal-plan-generator" element={<MealPlanGenerator />} /> */}
       </Routes>
     </BrowserRouter>
