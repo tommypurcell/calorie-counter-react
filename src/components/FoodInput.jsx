@@ -233,7 +233,8 @@ export default function FoodInput() {
                         ))}
                       </select>
                     </h2>
-                    <button onClick={postFoodItems} className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white select-none">
+                    {/* type button so it doesnt submit the form again */}
+                    <button onClick={postFoodItems} type="button" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 text-white px-5 py-3 text-sm font-medium  select-none">
                       Submit to food log
                     </button>
                   </>
