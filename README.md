@@ -27,7 +27,13 @@ Welcome to the **Calorie Counter React** project repository! This is a simple we
 
 ## Usage
 
-1. Start the development server:
+1. Install packages:
+
+```bash
+npm i
+```
+
+2. Start the development server:
    or use the live website vesion [here](https://calorie-counter-mcz6.onrender.com/)
 
 ```bash
