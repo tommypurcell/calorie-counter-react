@@ -30,6 +30,9 @@ export default function Login(props) {
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
       navigate('/')
       console.log('message', loginAccount)
+      // Store token and user info in localStorage
+      localStorage.setItem('token', loginAccount.data.token)
+      localStorage.setItem('avatar', loginAccount.data.user.avatar)
       localStorage.setItem('isLoggedIn', true)
     } else {
       setErrorMsg(loginAccount.data)
