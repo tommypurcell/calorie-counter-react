@@ -18,11 +18,20 @@ export default function Nav(props) {
 
   const requestLogout = async (e) => {
     e.preventDefault()
+    try {
+      // Clear local storage and update state first
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('avatar')
+      setProfilePic(null) // Reset profile picture state
 
-    let userToLogout = await axios.get(`${render_url}/logout`)
+      // Then make the API call
+      await axios.get(`${render_url}/logout`)
 
-    localStorage.removeItem('isLoggedIn')
-    navigate('/login')
+      // Finally, navigate to the login page
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
   // Inside your Nav component
