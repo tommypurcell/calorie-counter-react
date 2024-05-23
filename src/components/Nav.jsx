@@ -56,19 +56,19 @@ export default function Nav(props) {
   return (
     <>
       {/* nav bar */}
-      <nav className="bg-gray-900 p-4 flex justify-between items-center">
+      <nav className="bg-gray-900 p-4 flex justify-between items-center select-none">
         <div className="flex items-center gap-x-6">
           <span className="text-white text-2xl font-thin text-nowrap">Calorie Counter</span>
-          <NavLink to="/" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
+          <NavLink to="/" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
             Home
           </NavLink>
-          <NavLink to="/stats" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
+          <NavLink to="/stats" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
             Stats
           </NavLink>
         </div>
         <div className="flex items-center mr-6">
           {isLoggedIn ? (
-            <NavLink to="/profile" className={({ isActive }) => `flex items-center space-x-2 ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+            <NavLink to="/profile" className={({ isActive }) => `flex items-center space-x-2 ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'}`} draggable="false">
               <div className="relative">
                 <div className="h-10 w-10 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${profilePic})` }}></div>
                 <span className="absolute top-0 right-0 h-4 w-4 bg-red-600 text-white text-xs flex items-center justify-center rounded-full">1</span>
