@@ -26,7 +26,7 @@ export default function Login(props) {
       { withCredentials: true } // This is necessary to receive and send cookies
     )
 
-    console.log(JSON.stringify(loginAccount)) // Convert object to JSON string
+    console.log('loginAcccount', JSON.stringify(loginAccount)) // Convert object to JSON string
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
       // Store token and user info in localStorage
       localStorage.setItem('token', loginAccount.data.token)
