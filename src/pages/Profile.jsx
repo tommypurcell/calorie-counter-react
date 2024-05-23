@@ -11,10 +11,28 @@ let render_url = 'https://calorie-counter-api-singapore.onrender.com'
 let local_url = 'http://localhost:4100'
 
 export default function Profile() {
+  const navigate = useNavigate()
   // create state variable for user
   const [user, setUser] = useState({})
   const [profile, setProfile] = useState({})
   const [changesSaved, setChangesSaved] = useState(false)
+
+  const requestLogout = async (e) => {
+    e.preventDefault()
+    try {
+      // Clear local storage and update state first
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('avatar')
+
+      // Then make the API call
+      await axios.get(`${render_url}/logout`)
+
+      // Finally, navigate to the login page
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const getProfile = async () => {
     try {
@@ -88,6 +106,7 @@ export default function Profile() {
             </div>
             <button type="submit">Submit Profile </button>
           </form>
+          <button onClick={requestLogout}>logout</button>
         </div>
       ) : (
         <p>lodaing...</p>
