@@ -28,13 +28,14 @@ export default function Login(props) {
 
     console.log(JSON.stringify(loginAccount)) // Convert object to JSON string
     if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
-      navigate('/')
-      console.log('message', loginAccount)
       // Store token and user info in localStorage
       localStorage.setItem('token', loginAccount.data.token)
       localStorage.setItem('avatar', loginAccount.data.user.avatar)
       localStorage.setItem('name', loginAccount.data.user.name)
       localStorage.setItem('isLoggedIn', true)
+
+      navigate('/')
+      console.log('Login successful:', loginAccount)
     } else {
       setErrorMsg(loginAccount.data)
     }
