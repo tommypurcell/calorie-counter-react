@@ -48,61 +48,27 @@ export default function Nav(props) {
   return (
     <>
       {/* nav bar */}
-      <nav className="logo-bar container">
-        <div className="d-flex flex-column flex-md-row g-4 nav-div">
-          <NavLink
-            to="/"
-            style={({ isActive }) => ({
-              color: isActive ? '#fff' : '',
-              background: isActive ? '#7600dc' : ''
-            })}
-            className="m-2 w-100 text-center nav-button"
-          >
+      <nav className="bg-gray-900 p-4 flex justify-between items-center">
+        <div className="flex items-center gap-x-6">
+          <span className="text-white text-2xl font-thin text-nowrap">Calorie Counter</span>
+          <NavLink to="/" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
             Home
           </NavLink>
-          {/* <NavLink
-            to="/meal-plan-generator"
-            style={({ isActive }) => ({
-              color: isActive ? '#fff' : '',
-              background: isActive ? '#7600dc' : ''
-            })}
-            className="m-2 w-100 text-center nav-button"
-          >
-            Meal Plan Generator
-          </NavLink> */}
-          <NavLink
-            to="/stats"
-            style={({ isActive }) => ({
-              color: isActive ? '#fff' : '',
-              background: isActive ? '#7600dc' : ''
-            })}
-            className="m-2 w-100 text-center nav-button position-relative"
-          >
+          <NavLink to="/stats" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
             Stats
           </NavLink>
-
+        </div>
+        <div className="flex items-center mr-6">
           {isLoggedIn ? (
-            <NavLink
-              to="/profile"
-              style={({ isActive }) => ({
-                color: isActive ? '#fff' : '',
-                background: isActive ? '#7600dc' : ''
-              })}
-              className="m-2 w-100 text-center nav-button d-flex flex-row gap-2 position-relative align-items-center"
-            >
-              <img src={props.profilePic} alt="profile headshot for nav menu" className="rounded-circle h-100 m-0 w-auto" />
-              <span>Profile</span>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded bg-danger">
-                <span>1</span>
-              </span>
+            <NavLink to="/profile" className={({ isActive }) => `flex items-center space-x-2 ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${profilePic})` }}></div>
+                <span className="absolute top-0 right-0 h-4 w-4 bg-red-600 text-white text-xs flex items-center justify-center rounded-full">1</span>
+              </div>
+              <span className="text-white">{localStorage.getItem('name')}</span>
             </NavLink>
-          ) : null}
-          {isLoggedIn ? (
-            <a onClick={(e) => requestLogout(e)} type="submit" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
-              Logout
-            </a>
           ) : (
-            <NavLink to="/login" className="btn btn-outline-secondary m-2 w-100 text-center nav-button" style={{ height: 44, marginLeft: 5 }}>
+            <NavLink to="/login" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
               Login
             </NavLink>
           )}
