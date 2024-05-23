@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import React, { Component } from 'react'
 axios.defaults.withCredentials = true
