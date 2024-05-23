@@ -27,9 +27,23 @@ export default function Nav(props) {
 
   // Inside your Nav component
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn')
-    console.log('Login status changed:', isLoggedIn)
-  }, [props.loggedIn])
+    const getProfile = async () => {
+      if (!isLoggedIn) {
+        setProfilePic(null)
+      }
+      try {
+        const response = await axios.get(`${render_url}/profile`, {
+          withCredentials: true // Include credentials in the request
+        })
+        console.log('Response:', response)
+        console.log(response.data.avatar)
+        setProfilePic(response.data.avatar)
+      } catch (error) {
+        alert(error.message)
+      }
+    }
+    getProfile()
+  }, [isLoggedIn])
 
   return (
     <>
