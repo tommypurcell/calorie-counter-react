@@ -9,30 +9,6 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: #f8f6f4;
-}
-
-.plus-minus {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  text-align: center;
-  position: relative;
-}
-
-.action-button {
-  user-select: none;
-  height: 2rem;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin: 0.5rem;
-}
-
-.MealPlanGenerator {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
 }
 
 .nav-div {
@@ -83,6 +59,7 @@ button:hover {
   background-color: #395b64;
   cursor: pointer;
 }
+
 .submit-food {
   width: 100px;
 }
@@ -136,21 +113,6 @@ ul {
 .instructions {
   font-size: 0.9rem;
   margin-bottom: 1rem;
-}
-
-a {
-  text-decoration: none;
-  background-color: #395b64;
-  color: #f3f3f3;
-  width: fit-content;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-}
-
-a:hover {
-  background-color: #a5c9ca;
-  color: #1a5f7a;
-  cursor: pointer;
 }
 
 .calorie-counter-container {
