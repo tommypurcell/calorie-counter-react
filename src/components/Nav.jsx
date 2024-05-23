@@ -10,7 +10,6 @@ let local_url = 'http://localhost:4000'
 
 export default function Nav(props) {
   const isLoggedIn = localStorage.getItem('isLoggedIn')
-  console.log(props)
 
   const [profilePic, setProfilePic] = useState(localStorage.getItem('avatar'))
 
