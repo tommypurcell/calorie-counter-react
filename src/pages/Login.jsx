@@ -33,6 +33,7 @@ export default function Login(props) {
       // Store token and user info in localStorage
       localStorage.setItem('token', loginAccount.data.token)
       localStorage.setItem('avatar', loginAccount.data.user.avatar)
+      localStorage.setItem('name', loginAccount.data.user.name)
       localStorage.setItem('isLoggedIn', true)
     } else {
       setErrorMsg(loginAccount.data)
