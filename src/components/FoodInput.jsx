@@ -12,7 +12,7 @@ axios.defaults.withCredentials = true
 const render_url = process.env.REACT_APP_RENDER_USA_URL
 const local_url = process.env.REACT_APP_LOCAL_URL
 
-export default function FoodInput() {
+export default function FoodInput(props) {
   const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'
   const applicationID = '2dafcce0'
   const [foodItem, setFoodItem] = useState('')
@@ -124,6 +124,7 @@ export default function FoodInput() {
     }
     setFoodLog([])
     setTotalCalories(0)
+    props.setFoodLogChanged(true)
   }
 
   const handleInputChange = (e) => {
@@ -162,13 +163,13 @@ export default function FoodInput() {
     <>
       {!isLoggedIn ? (
         <>
-          <h1>Please login to view food log</h1>
+          <h1 className="text-center text-2xl font-bold text-gray-500 sm:text-3xl">Please login to add foods</h1>
         </>
       ) : (
         <>
-          <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-lg">
-              <h1 className="text-center text-2xl font-bold text-blue-500 sm:text-3xl">Log New Food Item</h1>
+              <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Log New Food Item</h1>
 
               <form
                 onSubmit={
