@@ -21,8 +21,9 @@ import Nav from './components/Nav'
 
 // Set up axios configurations
 axios.defaults.withCredentials = true
-const local_url = 'http://localhost:4000'
-const render_url = 'https://calorie-counter-api-singapore.onrender.com'
+
+const render_url = process.env.REACT_APP_RENDER_USA_URL
+const local_url = process.env.REACT_APP_LOCAL_URL
 
 function App() {
   // State for managing logged-in status

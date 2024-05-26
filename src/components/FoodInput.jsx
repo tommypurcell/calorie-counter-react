@@ -9,8 +9,8 @@ axios.defaults.withCredentials = true
 // Docs for edamam api
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
-let render_url = 'https://calorie-counter-api-singapore.onrender.com'
-let local_url = 'http://localhost:4000'
+const render_url = process.env.REACT_APP_RENDER_USA_URL
+const local_url = process.env.REACT_APP_LOCAL_URL
 
 export default function FoodInput() {
   const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'

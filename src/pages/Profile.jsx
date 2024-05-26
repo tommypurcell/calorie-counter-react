@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom'
 import React from 'react'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-singapore.onrender.com'
-let local_url = 'http://localhost:4100'
+const local_url = process.env.REACT_APP_LOCAL_URL
+const render_url = process.env.REACT_APP_RENDER_USA_URL
 
 export default function Profile() {
   const navigate = useNavigate()

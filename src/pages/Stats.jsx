@@ -6,8 +6,8 @@ import axios from 'axios'
 import Nav from '../components/Nav'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ReferenceLine, CartesianGrid } from 'recharts'
 
-const render_url = 'https://calorie-counter-api-singapore.onrender.com'
-const local_url = 'http://localhost:4000'
+const render_url = process.env.REACT_APP_RENDER_USA_URL
+const local_url = process.env.REACT_APP_LOCAL_URL
 
 export default function Stats(props) {
   const isLoggedIn = localStorage.getItem('isLoggedIn')
