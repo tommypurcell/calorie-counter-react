@@ -147,7 +147,7 @@ export default function FoodLog(props) {
         </div>
       ) : isLoggedIn ? (
         <main className="food-log-container">
-          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">
+          <h1 className="text-center text-xl font-bold text-gray-700 sm:text-lg">
             Food Log
           </h1>
 
