@@ -21,6 +21,8 @@ export default function Nav(props) {
       // Clear local storage and update state first
       localStorage.removeItem('isLoggedIn')
       localStorage.removeItem('avatar')
+      localStorage.removeItem('name')
+      localStorage.removeItem('calorieGoal')
       setProfilePic(null) // Reset profile picture state
 
       // Then make the API call
