@@ -5,6 +5,7 @@ import React from 'react'
 import axios from 'axios'
 import Nav from '../components/Nav'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ReferenceLine, CartesianGrid } from 'recharts'
+import FoodInput from '../components/FoodInput'
 
 const render_url = process.env.REACT_APP_RENDER_USA_URL
 const local_url = process.env.REACT_APP_LOCAL_URL
