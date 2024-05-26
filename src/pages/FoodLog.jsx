@@ -9,8 +9,8 @@ import { check } from 'prettier'
 import { Link } from 'react-router-dom'
 axios.defaults.withCredentials = true
 
-let render_url = 'https://calorie-counter-api-singapore.onrender.com'
-let local_url = 'http://localhost:4000'
+const render_url = process.env.REACT_APP_RENDER_USA_URL
+const local_url = process.env.REACT_APP_LOCAL_URL
 
 // ***************
 // TODO
@@ -23,8 +23,11 @@ export default function FoodLog(props) {
   const applicationID = '7b70e049'
   const [foodLog, setFoodLog] = useState([])
   const [date, setDate] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [editButtons, setEditButtons] = useState(false)
 
   console.log(props.foodLogChanged)
+  console.log(props.cal)
 
   // format date
   const formatDate = (date) => {
@@ -37,10 +40,12 @@ export default function FoodLog(props) {
 
   // get all foods for current logged in user
   const getFoods = async () => {
+    setLoading(true)
     const response = await axios.get(`${render_url}/foods`, {
       withCredentials: true
     })
     setFoodLog(response.data)
+    setLoading(false)
   }
 
   // delete food item from database
@@ -94,42 +99,94 @@ export default function FoodLog(props) {
 
   return (
     <>
-      {isLoggedIn ? (
+      {loading ? (
+        <div role="status">
+          <div role="status" className="max-w-md p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
+                <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
+                <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
+                <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
+                <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
+                <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12" />
+            </div>
+            <span className="sr-only">Loading...</span>
+          </div>
+
+          <span className="sr-only">Loading...</span>
+        </div>
+      ) : isLoggedIn ? (
         <main className="food-log-container">
-          <h1>This is the food log</h1>
-          <button onClick={(e) => getFoods(e)}>Get Foods</button>
+          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Food Log</h1>
+
           <div>
-            <div className="day-of-food">
-              {typeof foodLog === 'object' && foodLog.length > 0 ? (
-                // Render foodLog if it exists and is not empty
+            <div className="shadow-sm">
+              {foodLog.length > 0 ? (
                 foodLog.map((day, dayIndex) => (
                   <div key={dayIndex}>
-                    <h3>Date: {day.date}</h3>
-                    <section className="food-log-item">
+                    <h3 className="text-gray-700 font-bold text-lg bg-gray-200 px-2 pt-2">{day.date}</h3>
+                    <section className="food-log-item mt-0 mb-5">
                       {day.foods.map((food, foodIndex) => (
-                        <div key={foodIndex}>
-                          <p>Food: {food.name}</p>
-                          <p>Calories: {food.calories}</p>
+                        <div key={foodIndex} className={`flex flex-row justify-between p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}>
+                          <p className="text-2xl text-gray-700 font-bold">{food.name}</p>
+                          <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
                           <div className="food-log-buttons">
-                            <button className="removeFood" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
-                              Remove
-                            </button>
-                            <button onClick={() => addCalories(dayIndex, foodIndex)}>+10</button>
-                            <button onClick={() => subtractCalories(dayIndex, foodIndex)}>-10</button>
+                            {!editButtons ? (
+                              <button className="bg-blue-500 hover:bg-blue-400 w-16 h-8 flex items-center" onClick={() => setEditButtons(true)}>
+                                Edit
+                              </button>
+                            ) : (
+                              <>
+                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => addCalories(dayIndex, foodIndex)}>
+                                  +10
+                                </button>
+                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => subtractCalories(dayIndex, foodIndex)}>
+                                  -10
+                                </button>
+                                <button className="removeFood bg-red-500 hover:bg-red-400" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
+                                  Remove
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}
-                      <h2>Total Calories: {day.totalCalories}</h2>
+                      <h2 className={`font-semibold text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl `}>Total {day.totalCalories} cal for the day</h2>
                     </section>
                   </div>
                 ))
               ) : (
-                // Render a message if foodLog is empty or not defined
                 <div>
-                  <p>Your food log is currently empty because you have not logged any food.</p>
-
+                  <p>Your food log is currently empty.</p>
                   <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
-                    Click here to start logging food!
+                    Login to start logging food
                   </Link>
                 </div>
               )}
@@ -138,7 +195,7 @@ export default function FoodLog(props) {
         </main>
       ) : (
         <div className="d-flex justify-content-center align-items-center">
-          <h1>Please log in to view foodlog.</h1>
+          <h1>Please log in to view the food log.</h1>
         </div>
       )}
     </>
