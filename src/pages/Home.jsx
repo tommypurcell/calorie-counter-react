@@ -7,45 +7,32 @@ import FoodLog from './FoodLog'
 import Nav from '../components/Nav'
 import { useState, useEffect } from 'react'
 import CalorieCounter from './CalorieCounter'
+import FoodInput from '../components/FoodInput'
 
 import { Link } from 'react-router-dom'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import { faCoffee, faPen } from '@fortawesome/free-solid-svg-icons'
-let render_url = 'https://calorie-counter-api-portalversion.onrender.com'
-let local_url = 'http://localhost:4000'
-function Home(props) {
+
+const render_url = process.env.REACT_APP_RENDER_USA_URL
+const local_url = process.env.REACT_APP_LOCAL_URL
+
+export default function Home(props) {
   const numberOfCards = 2
   const cards = [...new Array(numberOfCards)]
 
   const [foods, setFoods] = useState([])
   const [foodLogChanged, setFoodLogChanged] = useState(false)
 
+  console.log('caloriegoal home', props.calorieGoal)
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-4 w-full h-screen">
       <div className="grid">
-        <div className="row row-cols-1 row-cols-md-2 g-4">
+        <div className="pt-10 row row-cols-1 row-cols-md-2 g-4">
           <div className="col">
-            <Card setFoodLogChanged={setFoodLogChanged} />
+            <FoodInput setFoodLogChanged={setFoodLogChanged} />
           </div>
-          <div className="food-log-container">
-            <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} />
-          </div>
+          <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} calorieGoal={props.calorieGoal} />
         </div>
       </div>
     </div>
-  )
-}
-
-export default Home
-
-function Card({ setFoodLogChanged }) {
-  return (
-    <>
-      <div className="card d-flex align-items-center">
-        <div className="card-body text-center">
-          <CalorieCounter setFoodLogChanged={setFoodLogChanged} />
-        </div>
-      </div>
-    </>
   )
 }
