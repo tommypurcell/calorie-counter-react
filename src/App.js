@@ -29,6 +29,7 @@ function App() {
   // State for managing logged-in status
   const [loggedIn, setLoggedIn] = useState(false)
   const [profilePic, setProfilePic] = useState('')
+  const [calorieGoal, setCalorieGoal] = useState(0)
 
   // Function to check if user is logged in
   const checkLogin = async () => {
@@ -40,6 +41,7 @@ function App() {
         localStorage.setItem('isLoggedIn', true)
         console.log('avatar:', user.data.avatar)
         setProfilePic(user.data.avatar)
+        setCalorieGoal(user.data.calorieGoal)
       }
     } catch (err) {
       console.error('Error checking login:', err.message)
@@ -59,12 +61,14 @@ function App() {
       {/* Pass loggedIn state and handleLogout function as props to Nav */}
       <Nav profilePic={profilePic} />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/landing-page" element={<LandingPage />} />
+        <Route path="/gpt" element={<CalorieCounter />} />
+
         {/* <Route path="/meal-plan-generator" element={<MealPlanGenerator />} /> */}
       </Routes>
     </BrowserRouter>
