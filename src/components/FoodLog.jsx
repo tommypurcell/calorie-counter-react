@@ -4,7 +4,7 @@ import React from 'react'
 import axios from 'axios'
 import { Params } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import Nav from '../components/Nav'
+import Nav from './Nav'
 import { check } from 'prettier'
 import { Link } from 'react-router-dom'
 axios.defaults.withCredentials = true
@@ -101,7 +101,10 @@ export default function FoodLog(props) {
     <>
       {loading ? (
         <div role="status">
-          <div role="status" className="max-w-md p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+          <div
+            role="status"
+            className="max-w-md p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5" />
@@ -144,33 +147,62 @@ export default function FoodLog(props) {
         </div>
       ) : isLoggedIn ? (
         <main className="food-log-container">
-          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Food Log</h1>
+          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">
+            Food Log
+          </h1>
 
           <div>
             <div className="shadow-sm">
               {foodLog.length > 0 ? (
                 foodLog.map((day, dayIndex) => (
                   <div key={dayIndex}>
-                    <h3 className="text-gray-700 font-bold text-lg bg-gray-200 px-2 pt-2">{day.date}</h3>
+                    <h3 className="text-gray-700 font-bold text-lg bg-gray-200 px-2 pt-2">
+                      {day.date}
+                    </h3>
                     <section className="food-log-item mt-0 mb-5">
                       {day.foods.map((food, foodIndex) => (
-                        <div key={foodIndex} className={`flex flex-row justify-between p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}>
-                          <p className="text-2xl text-gray-700 font-bold">{food.name}</p>
-                          <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                        <div
+                          key={foodIndex}
+                          className={`flex flex-row justify-between p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}
+                        >
+                          <p className="text-2xl text-gray-700 font-bold">
+                            {food.name}
+                          </p>
+                          <p className="text-lg text-gray-500 font-semibold">
+                            {food.calories} cal
+                          </p>
                           <div className="food-log-buttons">
                             {!editButtons ? (
-                              <button className="bg-blue-500 hover:bg-blue-400 w-16 h-8 flex items-center" onClick={() => setEditButtons(true)}>
+                              <button
+                                className="bg-blue-500 hover:bg-blue-400 w-16 h-8 flex items-center"
+                                onClick={() => setEditButtons(true)}
+                              >
                                 Edit
                               </button>
                             ) : (
                               <>
-                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => addCalories(dayIndex, foodIndex)}>
+                                <button
+                                  className="bg-blue-500 hover:bg-blue-400"
+                                  onClick={() =>
+                                    addCalories(dayIndex, foodIndex)
+                                  }
+                                >
                                   +10
                                 </button>
-                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => subtractCalories(dayIndex, foodIndex)}>
+                                <button
+                                  className="bg-blue-500 hover:bg-blue-400"
+                                  onClick={() =>
+                                    subtractCalories(dayIndex, foodIndex)
+                                  }
+                                >
                                   -10
                                 </button>
-                                <button className="removeFood bg-red-500 hover:bg-red-400" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
+                                <button
+                                  className="removeFood bg-red-500 hover:bg-red-400"
+                                  onClick={() =>
+                                    deleteFoodItem(dayIndex, foodIndex)
+                                  }
+                                >
                                   Remove
                                 </button>
                               </>
@@ -178,14 +210,21 @@ export default function FoodLog(props) {
                           </div>
                         </div>
                       ))}
-                      <h2 className={`font-semibold text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl `}>Total {day.totalCalories} cal for the day</h2>
+                      <h2
+                        className={`font-semibold text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl `}
+                      >
+                        Total {day.totalCalories} cal for the day
+                      </h2>
                     </section>
                   </div>
                 ))
               ) : (
                 <div>
                   <p>Your food log is currently empty.</p>
-                  <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
+                  <Link
+                    to="/calorie-counter"
+                    className="m-2 w-100 text-center nav-button"
+                  >
                     Login to start logging food
                   </Link>
                 </div>
