@@ -39,7 +39,6 @@ function App() {
       })
       if (user.data !== 'Not authorized') {
         localStorage.setItem('isLoggedIn', true)
-        console.log('avatar:', user.data.avatar)
         setProfilePic(user.data.avatar)
         setCalorieGoal(user.data.calorieGoal)
       }
