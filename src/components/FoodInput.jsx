@@ -79,12 +79,35 @@ export default function FoodInput(props) {
     getGptEstimate()
   }
 
-  const getGptEstimate = async () => {
+  const getGptEstimate = async (e) => {
+    e.preventDefault()
+
     try {
-      const response = await axios.post('http://localhost:4100/chat', { prompt: `Write your response in json. Estimate the nutrition info for ${foodItem}. Include a total_calories key with number` }, { headers: { 'OpenAI-Beta': 'assistants=v1' } })
-      console.log('response=====', response.data)
+      const response = await axios.post(
+        `${render_url}/gpt-nutrition`,
+        {
+          foodItem: foodItem // Submitting the food item to the GPT route
+        },
+        { withCredentials: true }
+      )
+
+      console.log('Nutrition data:', response.data)
+
+      // Iterate over the entries array
+      for (let entry of response.data.entries) {
+        // Creating a new food item from the GPT response
+        const newFoodItem = {
+          name: entry.food, // Food name from GPT response
+          calories: entry.calories // Calories from GPT response
+        }
+
+        // Use functional updates to ensure correct state updates
+        setFoodLog((prevFoodLog) => [newFoodItem, ...prevFoodLog])
+        setTotalCalories((prevTotalCalories) => prevTotalCalories + entry.calories)
+      }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching GPT nutrition data:', error.message)
+      // Optionally handle the error state
     }
   }
 
