@@ -4,7 +4,7 @@ import React from 'react'
 import axios from 'axios'
 import { Params } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import Nav from '../components/Nav'
+import Nav from './Nav'
 import { check } from 'prettier'
 import { Link } from 'react-router-dom'
 axios.defaults.withCredentials = true

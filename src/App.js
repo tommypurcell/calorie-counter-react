@@ -18,6 +18,7 @@ import MealPlanGenerator from './pages/MealPlanGenerator'
 
 // import components
 import Nav from './components/Nav'
+import FoodLog from './components/FoodLog'
 
 // Set up axios configurations
 // axios.defaults.withCredentials = true

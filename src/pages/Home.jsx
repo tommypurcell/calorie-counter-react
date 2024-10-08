@@ -3,7 +3,7 @@
 import React from 'react'
 import axios from 'axios'
 import Stats from './Stats'
-import FoodLog from './FoodLog'
+import FoodLog from '../components/FoodLog'
 import Nav from '../components/Nav'
 import { useState, useEffect } from 'react'
 import CalorieCounter from './CalorieCounter'
