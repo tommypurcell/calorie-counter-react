@@ -59,6 +59,10 @@ function App() {
     <BrowserRouter>
       {/* Pass loggedIn state and handleLogout function as props to Nav */}
       <Nav profilePic={profilePic} />
+
+      {/* Conditionally render Nav if not on login or signup pages */}
+      {location.pathname !== '/login' && location.pathname !== '/signup' ? <Nav profilePic={profilePic} /> : null}
+
       <Routes>
         <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
         <Route path="/stats" element={<Stats />} />
