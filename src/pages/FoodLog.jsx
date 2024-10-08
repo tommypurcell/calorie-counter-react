@@ -143,7 +143,7 @@ export default function FoodLog(props) {
           <span className="sr-only">Loading...</span>
         </div>
       ) : isLoggedIn ? (
-        <main className="food-log-container">
+        <main className="food-log-container min-h-screen pb-48">
           <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Food Log</h1>
 
           <div>
@@ -154,13 +154,15 @@ export default function FoodLog(props) {
                     <h3 className="text-gray-700 font-bold text-lg bg-gray-200 px-2 pt-2">{day.date}</h3>
                     <section className="food-log-item mt-0 mb-5">
                       {day.foods.map((food, foodIndex) => (
-                        <div key={foodIndex} className={`flex flex-row justify-between p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}>
-                          <p className="text-2xl text-gray-700 font-bold">{food.name}</p>
-                          <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                        <div key={foodIndex} className={`flex flex-row gap-x-4 p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}>
+                          <div className="flex flex-row justify-between w-full">
+                            <p className="text-2xl text-gray-700 font-bold">{food.name}</p>
+                            <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                          </div>
                           <div className="food-log-buttons">
                             {!editButtons ? (
-                              <button className="bg-blue-500 hover:bg-blue-400 w-16 h-8 flex items-center" onClick={() => setEditButtons(true)}>
-                                Edit
+                              <button className="bg-blue-500 rounded text-white hover:bg-blue-400 w-16 h-8 flex items-center" onClick={() => setEditButtons(true)}>
+                                <span className="text-center w-full">Edit</span>
                               </button>
                             ) : (
                               <>
