@@ -11,14 +11,12 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
-import FoodLog from './pages/FoodLog'
 import LandingPage from './pages/LandingPage'
 import CalorieCounter from './pages/CalorieCounter'
 import MealPlanGenerator from './pages/MealPlanGenerator'
 
 // import components
 import Nav from './components/Nav'
-import FoodLog from './components/FoodLog'
 
 // Set up axios configurations
 // axios.defaults.withCredentials = true
