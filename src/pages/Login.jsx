@@ -1,14 +1,16 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react'
-import { Link } from 'react-router-dom'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+
 axios.defaults.withCredentials = true
 
 const render_url = process.env.REACT_APP_RENDER_USA_URL
 const local_url = process.env.REACT_APP_LOCAL_URL
+console.log(render_url)
 
 export default function Login(props) {
   const navigate = useNavigate()
@@ -17,37 +19,47 @@ export default function Login(props) {
   const requestLogin = async (e) => {
     e.preventDefault()
 
-    let loginAccount = await axios.post(
-      `${render_url}/login`,
-      {
-        email: e.target.email.value,
-        password: e.target.password.value
-      },
-      { withCredentials: true } // This is necessary to receive and send cookies
-    )
+    try {
+      let loginAccount = await axios.post(
+        `${render_url}/login`,
 
-    console.log('loginAcccount', JSON.stringify(loginAccount)) // Convert object to JSON string
-    if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
-      // Store token and user info in localStorage
-      localStorage.setItem('token', loginAccount.data.token)
-      localStorage.setItem('avatar', loginAccount.data.user.avatar)
-      localStorage.setItem('name', loginAccount.data.user.name)
-      localStorage.setItem('isLoggedIn', true)
+        {
+          email: e.target.email.value,
+          password: e.target.password.value
+        },
+        { withCredentials: true }
+      )
 
-      navigate('/')
-      console.log('Login successful:', loginAccount)
-    } else {
-      setErrorMsg(loginAccount.data)
+      console.log('loginAccount', loginAccount)
+
+      if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
+        localStorage.setItem('token', loginAccount.data.token)
+        localStorage.setItem('avatar', loginAccount.data.user.avatar)
+        localStorage.setItem('name', loginAccount.data.user.name)
+        localStorage.setItem('isLoggedIn', true)
+
+        navigate('/')
+      } else {
+        setErrorMsg(loginAccount.data)
+      }
+    } catch (error) {
+      console.error('Network or server error:', error)
+      setErrorMsg('An error occurred. Please try again later.')
     }
   }
 
   return (
-    <>
-      <div className="login-card card align-items-center position-absolute top-50 start-50 translate-middle w-50 h-auto p-5">
-        <form onSubmit={(e) => requestLogin(e)}>
-          {props.loginAttempt && !errorMsg ? (
-            <h1>Logging in. Please Wait...</h1>
-          ) : (
+    <div className="h-screen overflow-hidden">
+      <div className="grid grid-cols-2 h-full">
+        <div
+          style={{
+            backgroundColor: '#ddffaa',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpolygon fill='%23AE9' points='120 120 60 120 90 90 120 60 120 0 120 0 60 60 0 0 0 60 30 90 60 120 120 120 '/%3E%3C/svg%3E")`
+          }}
+          className="h-full"
+        ></div>
+        <div className="flex justify-center items-center h-full">
+          <form onSubmit={(e) => requestLogin(e)} className="bg-white p-8 rounded-lg shadow-lg">
             <div className="card-body container">
               <h4 className="text-danger">{errorMsg}</h4>
               <label>Email</label>
@@ -66,9 +78,9 @@ export default function Login(props) {
                 </span>
               </div>
             </div>
-          )}
-        </form>
+          </form>
+        </div>
       </div>
-    </>
+    </div>
   )
 }
