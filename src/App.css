@@ -1,6 +1,16 @@
 .App {
   text-align: center;
 }
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
 
 .App-logo {
   height: 40vmin;
