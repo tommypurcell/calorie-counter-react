@@ -1,22 +1,22 @@
 /* eslint-disable react/prop-types */
-import { Link, NavLink, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { useEffect, useState } from 'react'
 import React, { Component } from 'react'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+
 axios.defaults.withCredentials = true
 
-const render_url = process.env.REACT_APP_RENDER_USA_URL
 const local_url = process.env.REACT_APP_LOCAL_URL
+const render_url = process.env.REACT_APP_RENDER_USA_URL
 
-console.log('Render URL:', render_url) // This should print the URL
 console.log('Local URL:', local_url)
+console.log('Render URL:', render_url) // This should print the URL
 
 export default function Nav(props) {
   const isLoggedIn = localStorage.getItem('isLoggedIn')
+  const navigate = useNavigate()
 
   const [profilePic, setProfilePic] = useState(localStorage.getItem('avatar'))
-
-  const navigate = useNavigate()
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
