@@ -76,7 +76,7 @@ export default function FoodInput(props) {
     }
     setFoodLog([newFoodItem, ...foodLog])
     setTotalCalories(totalCalories + response.data.calories)
-    getGptEstimate()
+    // getGptEstimate()
   }
 
   const getGptEstimate = async (e) => {
@@ -205,7 +205,15 @@ export default function FoodInput(props) {
                 <div>
                   <div className="relative">
                     <div className="relative flex flex-row items-center mb-8">
-                      <input type="text" className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm" placeholder="1 plate of fried rice" value={foodItem} onChange={handleInputChange} />
+                      <input
+                        name="foodItem" // Ensure name is present for proper form handling
+                        type="text"
+                        className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm"
+                        placeholder="1 plate of fried rice"
+                        value={foodItem}
+                        onChange={handleInputChange}
+                      />
+
                       <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
                         <i className="fa-solid fa-bowl-food"></i>
                       </span>
@@ -220,22 +228,21 @@ export default function FoodInput(props) {
                               <p className="text-gray-500">{item.name}</p>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 align-start justify-start w-full">
-                              <a className="bg-blue-500 hover:bg-blue-400 w-full text-center select-none" onClick={() => subtractCalories(index, 10)}>
+                              <a className="bg-blue-500 hover:bg-blue-400 rounded text-white hover:cursor-pointer w-full text-center select-none" onClick={() => subtractCalories(index, 10)}>
                                 - 10
                               </a>
-                              <a className="bg-blue-500 hover:bg-blue-400 w-full text-center select-none" onClick={() => addCalories(index, 10)}>
+                              <a className="bg-blue-500 hover:bg-blue-400 rounded text-white hover:cursor-pointer w-full text-center select-none" onClick={() => addCalories(index, 10)}>
                                 + 10
                               </a>
 
-                              <a className="bg-blue-500 hover:bg-blue-400 w-full text-center select-none" onClick={() => subtractCalories(index, 100)}>
+                              <a className="bg-blue-500 hover:bg-blue-400 rounded text-white hover:cursor-pointer w-full text-center select-none" onClick={() => subtractCalories(index, 100)}>
                                 - 100
                               </a>
-                              <a className="bg-blue-500 hover:bg-blue-400 w-full text-center select-none" onClick={() => addCalories(index, 100)}>
+                              <a className="bg-blue-500 hover:bg-blue-400 rounded text-white hover:cursor-pointer w-full text-center select-none" onClick={() => addCalories(index, 100)}>
                                 + 100
                               </a>
                             </div>
-
-                            <button className="bg-red-500 hover:bg-red-600 w-full mt-8 select-none" onClick={() => removeFoodItem(index)}>
+                            <button className="bg-red-500 hover:bg-red-600 text-white rounded py-2 w-full mt-8 select-none" onClick={() => removeFoodItem(index)}>
                               Remove
                             </button>
                           </article>
@@ -263,9 +270,15 @@ export default function FoodInput(props) {
                     </button>
                   </>
                 ) : (
-                  <button type="submit" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
-                    Check Calories
-                  </button>
+                  <div className="flex flex-row gap-2">
+                    {' '}
+                    <button type="submit" className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
+                      Check Calories w API
+                    </button>
+                    <button onClick={getGptEstimate} type="button" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
+                      Check Cal w AI
+                    </button>
+                  </div>
                 )}
               </form>
             </div>
