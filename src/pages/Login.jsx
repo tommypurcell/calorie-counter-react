@@ -32,7 +32,10 @@ export default function Login(props) {
 
       console.log('loginAccount', loginAccount)
 
-      if (loginAccount.data !== 'Cannot login: User does not exist. Please sign up instead.') {
+      if (
+        loginAccount.data !==
+        'Cannot login: User does not exist. Please sign up instead.'
+      ) {
         localStorage.setItem('token', loginAccount.data.token)
         localStorage.setItem('avatar', loginAccount.data.user.avatar)
         localStorage.setItem('name', loginAccount.data.user.name)
@@ -56,19 +59,36 @@ export default function Login(props) {
             backgroundColor: `#DAFFFD`,
 
             // backgroundColor: '#ddffaa',
+            // eslint-disable-next-line max-len
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpolygon fill='%23AE9' points='120 120 60 120 90 90 120 60 120 0 120 0 60 60 0 0 0 60 30 90 60 120 120 120 '/%3E%3C/svg%3E")`
           }}
           className="h-full"
         ></div>
         <div className="flex justify-center items-center h-full">
-          <form onSubmit={(e) => requestLogin(e)} className="bg-white p-8 rounded-lg shadow-lg">
+          <form
+            onSubmit={(e) => requestLogin(e)}
+            className="bg-white p-8 rounded-lg shadow-lg"
+          >
             <div className="card-body container">
               <h4 className="text-danger">{errorMsg}</h4>
               <label>Email</label>
-              <input name="email" type="email" className="border rounded form-control" required={true} />
+              <input
+                name="email"
+                type="email"
+                className="border rounded form-control"
+                required={true}
+              />
               <label>Password</label>
-              <input type="password" className="border rounded form-control" required={true} name="password" />
-              <button type="submit" className="login-button btn btn-success mt-3">
+              <input
+                type="password"
+                className="border rounded form-control"
+                required={true}
+                name="password"
+              />
+              <button
+                type="submit"
+                className="login-button btn btn-success mt-3"
+              >
                 Login
               </button>
               <div>
