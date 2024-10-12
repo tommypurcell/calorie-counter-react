@@ -256,18 +256,14 @@ export default function FoodInput(props) {
                     <h2 className="text-gray-500">
                       Log foods for{' '}
                       <select className="form-select form-select-lg mb-3" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
-                        <option value={today}>{formatDate(today)}</option>
+                        <option value={today}>Today</option>
                         {dates.map((item, index) => (
                           <option key={index} value={item}>
-                            {formatDate(item)}
+                            {item}
                           </option>
                         ))}
                       </select>
                     </h2>
-                    {/* type button so it doesnt submit the form again */}
-                    <button onClick={postFoodItems} type="button" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 text-white px-5 py-3 text-sm font-medium  select-none">
-                      Submit to food log
-                    </button>
                   </>
                 ) : (
                   <div className="flex flex-row gap-2">
