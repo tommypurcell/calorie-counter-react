@@ -26,8 +26,7 @@ export default function FoodLog(props) {
   const [loading, setLoading] = useState(false)
   const [editButtons, setEditButtons] = useState(false)
 
-  console.log(props.foodLogChanged)
-  console.log(props.cal)
+  const [editField, setEditField] = useState(null) // Track the specific field being edited
 
   // format date
   const formatDate = (date) => {
@@ -143,58 +142,72 @@ export default function FoodLog(props) {
           <span className="sr-only">Loading...</span>
         </div>
       ) : isLoggedIn ? (
-        <main className="food-log-container min-h-screen pb-48">
+        <>
+          {' '}
           <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Food Log</h1>
+          <main className="food-log-container min-h-screen pb-48 pt-10">
+            <div>
+              <div className="">
+                {foodLog.length > 0 ? (
+                  foodLog.map((day, dayIndex) => (
+                    <div key={dayIndex}>
+                      <h3 className="text-gray-700 font-bold text-lg rounded-t-md bg-gray-200 px-2 pt-2">{day.date}</h3>
+                      <section className="food-log-item mt-0 mb-5 xl:w-[700px]">
+                        {day.foods.map((food, foodIndex) => (
+                          <div key={foodIndex} className={`flex flex-row gap-x-4 p-2 ${foodIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
+                            <div className="flex flex-row justify-between w-full">
+                              <p className="text-xl text-gray-800 font-normal w-64">{food.name}</p>
+                              <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                            </div>
+                            <div className="food-log-buttons flex flex-row gap-2">
+                              {/* Conditionally render edit buttons for the current food item */}
+                              {editField === `${dayIndex}-${foodIndex}` ? (
+                                <>
+                                  <button className="border-1 border-blue-500 bg-blue-100 text-blue-500 hover:underline rounded w-10 h-8" onClick={() => addCalories(dayIndex, foodIndex)}>
+                                    +10
+                                  </button>
+                                  <button className="border-1 border-blue-500 bg-blue-100 text-blue-500 hover:underline rounded w-10 h-8" onClick={() => subtractCalories(dayIndex, foodIndex)}>
+                                    -10
+                                  </button>
+                                  <button
+                                    className="text-red-500 hover:underline w-16 h-8"
+                                    onClick={() => {
+                                      if (window.confirm(`Are you sure you want to remove ${food.name}?`)) {
+                                        deleteFoodItem(dayIndex, foodIndex)
+                                      }
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
 
-          <div>
-            <div className="shadow-sm">
-              {foodLog.length > 0 ? (
-                foodLog.map((day, dayIndex) => (
-                  <div key={dayIndex}>
-                    <h3 className="text-gray-700 font-bold text-lg bg-gray-200 px-2 pt-2">{day.date}</h3>
-                    <section className="food-log-item mt-0 mb-5">
-                      {day.foods.map((food, foodIndex) => (
-                        <div key={foodIndex} className={`flex flex-row gap-x-4 p-4 ${foodIndex % 2 == 0 ? 'bg-white' : 'bg-gray-100'}`}>
-                          <div className="flex flex-row justify-between w-full">
-                            <p className="text-2xl text-gray-700 font-bold">{food.name}</p>
-                            <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                                  <button className="text-blue-500 hover:underline w-16 h-8" onClick={() => setEditField(null)}>
+                                    Cancel
+                                  </button>
+                                </>
+                              ) : (
+                                <button className="text-blue-500 hover:underline w-16 h-8" onClick={() => setEditField(`${dayIndex}-${foodIndex}`)}>
+                                  Edit
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="food-log-buttons">
-                            {!editButtons ? (
-                              <button className="bg-blue-500 rounded text-white hover:bg-blue-400 w-16 h-8 flex items-center" onClick={() => setEditButtons(true)}>
-                                <span className="text-center w-full">Edit</span>
-                              </button>
-                            ) : (
-                              <>
-                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => addCalories(dayIndex, foodIndex)}>
-                                  +10
-                                </button>
-                                <button className="bg-blue-500 hover:bg-blue-400" onClick={() => subtractCalories(dayIndex, foodIndex)}>
-                                  -10
-                                </button>
-                                <button className="removeFood bg-red-500 hover:bg-red-400" onClick={() => deleteFoodItem(dayIndex, foodIndex)}>
-                                  Remove
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      <h2 className={`font-semibold text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl `}>Total {day.totalCalories} cal for the day</h2>
-                    </section>
+                        ))}
+                        <h2 className={`font-thin text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl`}>{day.totalCalories} total calories for the day</h2>
+                      </section>
+                    </div>
+                  ))
+                ) : (
+                  <div>
+                    <p>Your food log is currently empty.</p>
+                    <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
+                      Login to start logging food
+                    </Link>
                   </div>
-                ))
-              ) : (
-                <div>
-                  <p>Your food log is currently empty.</p>
-                  <Link to="/calorie-counter" className="m-2 w-100 text-center nav-button">
-                    Login to start logging food
-                  </Link>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </>
       ) : (
         <div className="d-flex justify-content-center align-items-center">
           <h1>Please log in to view the food log.</h1>
