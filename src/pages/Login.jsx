@@ -29,21 +29,8 @@ export default function Login(props) {
         },
         { withCredentials: true }
       )
-
-      console.log('loginAccount', loginAccount)
-
-      if (
-        loginAccount.data !==
-        'Cannot login: User does not exist. Please sign up instead.'
-      ) {
-        localStorage.setItem('token', loginAccount.data.token)
-        localStorage.setItem('avatar', loginAccount.data.user.avatar)
-        localStorage.setItem('name', loginAccount.data.user.name)
-        localStorage.setItem('isLoggedIn', true)
-
-        navigate('/')
-      } else {
-        setErrorMsg(loginAccount.data)
+      if (loginAccount) {
+        console.log('loginAccount', loginAccount)
       }
     } catch (error) {
       console.error('Network or server error:', error)
@@ -65,30 +52,14 @@ export default function Login(props) {
           className="h-full"
         ></div>
         <div className="flex justify-center items-center h-full">
-          <form
-            onSubmit={(e) => requestLogin(e)}
-            className="bg-white p-8 rounded-lg shadow-lg"
-          >
+          <form onSubmit={(e) => requestLogin(e)} className="bg-white p-8 rounded-lg shadow-lg">
             <div className="card-body container">
               <h4 className="text-danger">{errorMsg}</h4>
               <label>Email</label>
-              <input
-                name="email"
-                type="email"
-                className="border rounded form-control"
-                required={true}
-              />
+              <input name="email" type="email" className="border rounded form-control" required={true} />
               <label>Password</label>
-              <input
-                type="password"
-                className="border rounded form-control"
-                required={true}
-                name="password"
-              />
-              <button
-                type="submit"
-                className="login-button btn btn-success mt-3"
-              >
+              <input type="password" className="border rounded form-control" required={true} name="password" />
+              <button type="submit" className="login-button btn btn-success mt-3">
                 Login
               </button>
               <div>
