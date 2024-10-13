@@ -26,7 +26,7 @@ export default function Home(props) {
   console.log('caloriegoal home', props.calorieGoal)
   const checkCalGoal = (calorieGoal) => {
     if (!calorieGoal) {
-      navigate('/login')
+      // navigate('/login')
     }
   }
 
