@@ -148,7 +148,7 @@ export default function FoodLog(props) {
           <main className="food-log-container min-h-screen pb-48 pt-10">
             <div>
               <div className="">
-                {foodLog.length > 0 ? (
+                {Array.isArray(foodLog) && foodLog.length > 0 ? (
                   foodLog.map((day, dayIndex) => (
                     <div key={dayIndex}>
                       <h3 className="text-gray-700 font-bold text-lg rounded-t-md bg-gray-200 px-2 pt-2">{day.date}</h3>
