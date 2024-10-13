@@ -32,6 +32,7 @@ export default function Login(props) {
       if (loginAccount) {
         console.log('loginAccount', loginAccount)
       }
+      navigate('/')
     } catch (error) {
       console.error('Network or server error:', error)
       setErrorMsg('An error occurred. Please try again later.')

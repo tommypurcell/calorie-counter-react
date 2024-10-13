@@ -147,6 +147,7 @@ export default function FoodInput(props) {
     }
     setFoodLog([])
     setTotalCalories(0)
+    setFoodItem('')
     props.setFoodLogChanged(true)
   }
 
@@ -264,6 +265,15 @@ export default function FoodInput(props) {
                         ))}
                       </select>
                     </h2>
+                    <button
+                      onClick={() => {
+                        postFoodItems()
+                        setFoodLog([])
+                      }}
+                      className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white"
+                    >
+                      Add to food log
+                    </button>
                   </>
                 ) : (
                   <div className="flex flex-row gap-2">
