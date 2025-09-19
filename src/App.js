@@ -17,6 +17,7 @@ import MealPlanGenerator from './pages/MealPlanGenerator'
 
 // import components
 import Nav from './components/Nav'
+import { supabase } from './supabase'
 
 // Set up axios configurations
 // axios.defaults.withCredentials = true
@@ -32,17 +33,12 @@ function App() {
 
   // Function to check if user is logged in
   const checkLogin = async () => {
-    try {
-      let user = await axios.get(`${render_url}/profile`, {
-        withCredentials: true
-      })
-      if (user.data !== 'Not authorized') {
-        localStorage.setItem('isLoggedIn', true)
-        setProfilePic(user.data.avatar)
-        setCalorieGoal(user.data.calorieGoal)
-      }
-    } catch (err) {
-      console.error('Error checking login:', err.message)
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
+    if (user) {
+      localStorage.setItem('isLoggedIn', 'true')
+    } else {
+      localStorage.removeItem('isLoggedIn')
     }
   }
 
