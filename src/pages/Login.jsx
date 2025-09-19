@@ -1,18 +1,12 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react'
-import axios from 'axios'
+import { supabase } from '../supabase'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
-axios.defaults.withCredentials = true
-
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-const local_url = process.env.REACT_APP_LOCAL_URL
-console.log(render_url)
-
-export default function Login(props) {
+export default function Login() {
   const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -20,33 +14,43 @@ export default function Login(props) {
     e.preventDefault()
 
     try {
-      let loginAccount = await axios.post(
-        `${render_url}/login`,
+      const email = e.target.email.value
+      const password = e.target.password.value
 
-        {
-          email: e.target.email.value,
-          password: e.target.password.value
-        },
-        { withCredentials: true }
-      )
-
-      console.log('loginAccount', loginAccount)
-
-      if (
-        loginAccount.data !==
-        'Cannot login: User does not exist. Please sign up instead.'
-      ) {
-        localStorage.setItem('token', loginAccount.data.token)
-        localStorage.setItem('avatar', loginAccount.data.user.avatar)
-        localStorage.setItem('name', loginAccount.data.user.name)
-        localStorage.setItem('isLoggedIn', true)
-
-        navigate('/')
-      } else {
-        setErrorMsg(loginAccount.data)
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setErrorMsg(error.message)
+        return
       }
+      // Mark the user as logged in so Nav shows the correct UI immediately
+      localStorage.setItem('isLoggedIn', 'true')
+
+      // Prefill navbar data from profiles if available
+      try {
+        const {
+          data: { user }
+        } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, avatar, calorieGoal')
+            .eq('id', user.id)
+            .single()
+          if (profile) {
+            if (profile.name) localStorage.setItem('name', profile.name)
+            if (profile.avatar) localStorage.setItem('avatar', profile.avatar)
+            if (profile.calorieGoal !== undefined && profile.calorieGoal !== null) {
+              localStorage.setItem('calorieGoal', String(profile.calorieGoal))
+            }
+          }
+        }
+      } catch (_) {
+        // Non-fatal: navbar will still update from Nav effect
+      }
+
+      navigate('/')
     } catch (error) {
-      console.error('Network or server error:', error)
+      console.error('Supabase login error:', error)
       setErrorMsg('An error occurred. Please try again later.')
     }
   }

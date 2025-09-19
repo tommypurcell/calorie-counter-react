@@ -1,12 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-axios.defaults.withCredentials = true
-
-let render_url = 'https://calorie-counter-api-singapore.onrender.com'
-let local_url = 'http://localhost:4000'
+// Note: Render API is no longer used; all auth/profile actions go through Supabase
 
 export default function SignUp() {
   const navigate = useNavigate()
@@ -15,40 +12,76 @@ export default function SignUp() {
   // access api
 
   // Function to handle login after successful signup
-  const handleLoginAfterSignup = async (email, password) => {
-    try {
-      let loginAccount = await axios.post(
-        `${render_url}/login`,
-        {
-          email: email,
-          password: password
-        },
-        { withCredentials: true }
-      )
-
-      console.log('login data', loginAccount.data)
-      navigate('/') // Redirect to the home page after successful login
-    } catch (error) {
-      setErrorMsg('Cannot login: User does not exist. Please sign up instead.')
+  const handleLoginAfterSignup = async (email, password, fullName) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setErrorMsg(error.message)
+      return
     }
+    // Mark logged-in and hydrate navbar data
+    localStorage.setItem('isLoggedIn', 'true')
+    try {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+      if (user) {
+        // Ensure profile row exists then load it. Store full name if provided.
+        await supabase.from('profiles').upsert({ id: user.id, email: user.email || '', name: fullName || null }, { onConflict: 'id' })
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name, avatar, calorieGoal')
+          .eq('id', user.id)
+          .single()
+        if (profile) {
+          if (profile.name) localStorage.setItem('name', profile.name)
+          if (profile.avatar) localStorage.setItem('avatar', profile.avatar)
+          if (profile.calorieGoal !== undefined && profile.calorieGoal !== null) {
+            localStorage.setItem('calorieGoal', String(profile.calorieGoal))
+          }
+          // Fallback to the submitted full name if profile lacks one
+          if (!profile.name && fullName) {
+            localStorage.setItem('name', fullName)
+          }
+        }
+      }
+    } catch (_) {
+      // Non-fatal; Nav effect will still pick up later
+    }
+    navigate('/')
   }
 
+  // Function to check if passwords match
+  const checkPasswords = (password, confirmPassword) => {
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match')
+      return false
+    }
+    return true
+  }
+  
   const makeAccount = async (e) => {
     e.preventDefault()
     try {
-      let newAccount = await axios.post(`${render_url}/signup`, {
-        name: e.target.fullName.value,
-        email: e.target.email.value,
-        password: e.target.password.value
-      })
+      const email = e.target.email.value.trim().toLowerCase()
+      const password = e.target.password.value.trim()
+      const name = e.target.fullName.value.trim()
+      const confirmPassword = e.target.confirmPassword.value.trim()
 
-      if (newAccount.data === 'User with this email already exists') {
-        console.log(newAccount.data)
-        setErrorMsg(newAccount.data)
-      } else {
-        // If the signup is successful, log in the user
-        await handleLoginAfterSignup(newAccount.data.email, newAccount.data.password)
+      if (!checkPasswords(password, confirmPassword)) {
+        return
       }
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } }
+      })
+      if (error) {
+        setErrorMsg(error.message)
+        return
+      }
+
+      await handleLoginAfterSignup(email, password, name)
     } catch (error) {
       null
     }
@@ -71,12 +104,16 @@ export default function SignUp() {
           <div className="row">
             <input name="password" type="password" className="border rounded" required />
           </div>
-          <button type="submit" className="btn btn-success row mt-3">
+          <div className="row text-start">Confirm Password</div>
+          <div className="row">
+            <input name="confirmPassword" type="password" className="border rounded" required />
+          </div>
+          <button type="submit" className="btn btn-success bg-sky-900 hover:bg-sky-800 hover:text-green-300 border-gray-200 ">
             Sign Up
           </button>
           <div className="row">
             <span>
-              Already have an account? <Link to="/login">Login</Link>
+              Already have an account? <Link className="text-sky-900 hover:text-blue-400 hover:underline" to="/login">Login</Link>
             </span>
           </div>
         </form>
