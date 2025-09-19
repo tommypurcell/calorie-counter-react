@@ -2,54 +2,45 @@
 
 import React from 'react'
 import axios from 'axios'
+// import Nav from '../components/Nav'
+
+import { supabase } from '../supabase'
 import { useState, useEffect } from 'react'
-import Nav from '../components/Nav'
+
+
 
 axios.defaults.withCredentials = true
 // Docs for edamam api
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-const local_url = process.env.REACT_APP_LOCAL_URL
+// NOTE: We now log foods directly to Supabase (no Render API)
 
 export default function FoodInput(props) {
-  const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'
-  const applicationID = '2dafcce0'
-  const [foodItem, setFoodItem] = useState('')
-  const [foodLog, setFoodLog] = useState([])
-  const [totalCalories, setTotalCalories] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(``)
+  const applicationID = process.env.REACT_APP_EDAMAM_APPLICATION_ID
+  const applicationKey = process.env.REACT_APP_EDAMAM_APPLICATION_KEY
+
   const [dates, setDates] = useState([])
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [apiKey, setApiKey] = useState('')
   const [userId, setUserId] = useState('')
+  const [foodLog, setFoodLog] = useState([])
+  const [foodItem, setFoodItem] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(``)
+  const [totalCalories, setTotalCalories] = useState(0)
 
   // check if user is logged in
   const checkLogin = async () => {
-    console.log('checking login...')
-    try {
-      let login = await axios.get(`${render_url}/profile`, {
-        withCredentials: true,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        }
-      })
-      if (login.data == 'User not logged in') {
-        console.log('user not logged in')
-        setIsLoggedIn(false)
-      } else {
-        setIsLoggedIn(true)
-        setUserId(login._id)
-      }
-    } catch (err) {
-      console.error('Error fetching profile:', err.message)
-    }
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
+    setIsLoggedIn(!!user)
+    setUserId(user ? user.id : '')
   }
 
   // set up date object
   const date = new Date()
   let day = date.getDate()
-  let month = date.getMonth() + 1
   let year = date.getFullYear()
+  let month = date.getMonth() + 1
 
   // set date format
   if (day < 10) {
@@ -83,13 +74,8 @@ export default function FoodInput(props) {
     e.preventDefault()
 
     try {
-      const response = await axios.post(
-        `${render_url}/gpt-nutrition`,
-        {
-          foodItem: foodItem // Submitting the food item to the GPT route
-        },
-        { withCredentials: true }
-      )
+      // Placeholder: AI estimation endpoint removed. Keep structure for future.
+      const response = { data: { entries: [] } }
 
       console.log('Nutrition data:', response.data)
 
@@ -111,43 +97,48 @@ export default function FoodInput(props) {
     }
   }
 
-  // format selected date
-  const formatDate = (date) => {
-    if (date) {
-      let newDate = date.split('-')
-      let year = newDate[0]
-      let month = newDate[1]
-      let day = newDate[2]
-      return `${month}/${day}/${year}`
-    } else {
-      return null
-    }
-  }
+  // format selected date (reserved for future UI uses)
+  // const formatDate = (date) => {
+  //   if (!date) return null
+  //   const [y, m, d] = date.split('-')
+  //   return `${m}/${d}/${y}`
+  // }
 
   // get dates from database and set state
+  // Load available dates from Supabase for the current user
   const getDates = async () => {
-    let datesArr = []
-    const response = await axios.get(`${render_url}/foods`)
-    for (let item of response.data) {
-      datesArr.push(item.date)
+    if (!userId) return
+    const { data, error } = await supabase
+      .from('foods')
+      .select('eaten_at')
+      .eq('user_id', userId)
+    if (error) {
+      console.error('Error fetching dates:', error.message)
+      return
     }
-    setDates(datesArr)
+    const uniqueDates = Array.from(new Set((data || []).map((row) => row.eaten_at))).sort().reverse()
+    setDates(uniqueDates)
   }
 
   // post food item to database
+  // Persist queued items to Supabase
   const postFoodItems = async () => {
-    for (let item of foodLog) {
-      const response = await axios.post(`${render_url}/foods`, {
-        userId: userId,
-        name: item.name,
-        calories: item.calories,
-        date: selectedDate,
-        timestamp: Date.now()
-      })
+    if (!userId || foodLog.length === 0) return
+    const rows = foodLog.map((item) => ({
+      user_id: userId,
+      name: item.name,
+      calories: item.calories,
+      eaten_at: selectedDate
+    }))
+    const { error } = await supabase.from('foods').insert(rows)
+    if (error) {
+      console.error('Error saving foods:', error.message)
+      return
     }
     setFoodLog([])
     setTotalCalories(0)
     props.setFoodLogChanged(true)
+    getDates()
   }
 
   const handleInputChange = (e) => {
@@ -178,9 +169,15 @@ export default function FoodInput(props) {
 
   useEffect(() => {
     setSelectedDate(today)
-    getDates()
     checkLogin()
-  }, [])
+  }, [today])
+
+  useEffect(() => {
+    if (userId) {
+      getDates()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
 
   return (
     <>
@@ -264,6 +261,9 @@ export default function FoodInput(props) {
                         ))}
                       </select>
                     </h2>
+                    <button type="button" onClick={postFoodItems} className="block w-full rounded-lg bg-green-600 hover:bg-green-500 px-5 py-3 text-sm font-medium text-white">
+                      Save to Log
+                    </button>
                   </>
                 ) : (
                   <div className="flex flex-row gap-2">
@@ -271,9 +271,35 @@ export default function FoodInput(props) {
                     <button type="submit" className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
                       Check Calories w API
                     </button>
-                    <button onClick={getGptEstimate} type="button" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
-                      Check Cal w AI
-                    </button>
+
+                   
+
+                    <details className="dropdown flex-row gap-2">
+                    <summary className="btn m-1 flex-row gap-2">
+                      <div className="btn h-full flex flex-row gap-x-4 bg-gray-600 text-white justify-center items-center">
+                      
+                        <span className="text-nowrap">Check Calories w AI</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-robot" viewBox="0 0 16 16">
+                          <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5M3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.6 26.6 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.93.93 0 0 1-.765.935c-.845.147-2.34.346-4.235.346s-3.39-.2-4.235-.346A.93.93 0 0 1 3 9.219zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25 25 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25 25 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135"/>
+                          <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2zM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5"/>
+                        </svg>
+                      </div>
+                    </summary>
+                    <div className="dropdown select-none flex-row focus:outline-none focus:ring-0 gap-2">
+                      <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                      <div className="relative flex flex-row items-center mb-8">
+                        <input
+                          name="apiKey" // Ensure name is present for proper form handling
+                          type="text"
+                          className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm"
+                          placeholder="Enter OpenAI API Key"
+                          value={apiKey}
+                        />
+                      </div>
+                      </ul>
+                    </div>
+                  </details>
+
                   </div>
                 )}
               </form>

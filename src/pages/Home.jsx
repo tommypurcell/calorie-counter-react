@@ -25,16 +25,21 @@ export default function Home(props) {
 
   return (
     <div className="p-4 w-full h-screen">
-      <div className="grid">
-        <div className="pt-10 row row-cols-1 row-cols-md-2 g-2">
-          <div className="col">
-            <FoodInput setFoodLogChanged={setFoodLogChanged} />
-          </div>
-          <div className="col h-screen">
-            <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} calorieGoal={props.calorieGoal} />
-          </div>
+
+<div className="grid grid-cols-4">
+        <div className="col-span-2 ">
+          <FoodInput setFoodLogChanged={setFoodLogChanged} />
+        </div>
+        <div className="col-span-2 ">
+          <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} calorieGoal={props.calorieGoal} />
         </div>
       </div>
+
+
     </div>
+
+    
+     
+
   )
 }

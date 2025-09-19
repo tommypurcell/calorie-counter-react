@@ -2,15 +2,11 @@
 
 import React from 'react'
 import axios from 'axios'
-import { Params } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import Nav from './Nav'
-import { check } from 'prettier'
+import { supabase } from '../supabase'
 import { Link } from 'react-router-dom'
-axios.defaults.withCredentials = true
+import { useState, useEffect } from 'react'
 
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-const local_url = process.env.REACT_APP_LOCAL_URL
+axios.defaults.withCredentials = true
 
 // ***************
 // TODO
@@ -18,83 +14,109 @@ const local_url = process.env.REACT_APP_LOCAL_URL
 // ***************
 
 export default function FoodLog(props) {
-  const isLoggedIn = localStorage.getItem('isLoggedIn')
-  const applicationKey = '8803e138817c6dd9b43f6f0dcc52b9f1'
-  const applicationID = '7b70e049'
+  const { foodLogChanged, setFoodLogChanged, calorieGoal } = props
+  const isLoggedIn = !!localStorage.getItem('isLoggedIn')
   const [foodLog, setFoodLog] = useState([])
-  const [date, setDate] = useState('')
   const [loading, setLoading] = useState(false)
-  const [editButtons, setEditButtons] = useState(false)
 
   const [editField, setEditField] = useState(null) // Track the specific field being edited
 
-  // format date
-  const formatDate = (date) => {
-    let newDate = date.split('T')[0].split('-')
-    let year = newDate[0]
-    let month = newDate[1]
-    let day = newDate[2]
-    setDate(`${month}/${day}/${year}`)
+  // format date (if needed in future)
+
+  // Group flat rows into day buckets with totals
+  const groupFoodsByDate = (rows) => {
+    const grouped = rows.reduce((acc, row) => {
+      const dateKey = row.eaten_at
+      if (!acc[dateKey]) {
+        acc[dateKey] = { date: dateKey, foods: [], totalCalories: 0 }
+      }
+      acc[dateKey].foods.push(row)
+      acc[dateKey].totalCalories += row.calories || 0
+      return acc
+    }, {})
+    return Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date))
   }
 
-  // get all foods for current logged in user
+  // get all foods for current logged in user from Supabase
   const getFoods = async () => {
     setLoading(true)
-    const response = await axios.get(`${render_url}/foods`, {
-      withCredentials: true
-    })
-    setFoodLog(response.data)
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    if (!user) {
+      setLoading(false)
+      return
+    }
+    const { data, error } = await supabase
+      .from('foods')
+      .select('id, name, calories, eaten_at')
+      .eq('user_id', user.id)
+      .order('eaten_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching foods:', error.message)
+      setLoading(false)
+      return
+    }
+    setFoodLog(groupFoodsByDate(data || []))
     setLoading(false)
   }
 
   // delete food item from database
   const deleteFoodItem = async (dayIndex, foodIndex) => {
-    const idToDelete = foodLog[dayIndex].foods[foodIndex]._id
-    await axios.delete(`${render_url}/foods/${idToDelete}`)
+    const idToDelete = foodLog[dayIndex].foods[foodIndex].id
+    const { error } = await supabase.from('foods').delete().eq('id', idToDelete)
+    if (error) {
+      console.error('Error deleting food:', error.message)
+    }
     getFoods()
   }
 
   // add ten calories to food item when button is clicked
   const addCalories = async (dayIndex, foodIndex) => {
-    const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
+    const idToUpdate = foodLog[dayIndex].foods[foodIndex].id
     const caloriesToAdd = foodLog[dayIndex].foods[foodIndex].calories + 10
-    console.log(`axios patch request sent to ${render_url}/foods`)
-    await axios.patch(`${render_url}/foods`, {
-      id: idToUpdate,
-      calories: caloriesToAdd
-    })
+    const { error } = await supabase.from('foods').update({ calories: caloriesToAdd }).eq('id', idToUpdate)
+    if (error) {
+      console.error('Error updating calories:', error.message)
+    }
     getFoods()
   }
 
   // subtract ten calories from food item when button is clicked
   const subtractCalories = async (dayIndex, foodIndex) => {
-    const idToUpdate = foodLog[dayIndex].foods[foodIndex]._id
+    const idToUpdate = foodLog[dayIndex].foods[foodIndex].id
     const caloriesToSubtract = foodLog[dayIndex].foods[foodIndex].calories - 10
-    await axios.patch(`${render_url}/foods`, {
-      id: idToUpdate,
-      calories: caloriesToSubtract
-    })
+    const { error } = await supabase.from('foods').update({ calories: caloriesToSubtract }).eq('id', idToUpdate)
+    if (error) {
+      console.error('Error updating calories:', error.message)
+    }
     getFoods()
   }
 
-  const showObject = () => {
-    let display = ''
-    for (let key in foodLog) {
-      display += `${key}: ${foodLog[key]}`
-    }
-    return display
-  }
+  // removed unused helper
 
   useEffect(() => {
-    getFoods()
+    const ensureAuth = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) {
+        localStorage.setItem('isLoggedIn', 'true')
+        getFoods()
+      } else {
+        localStorage.removeItem('isLoggedIn')
+      }
+    }
+    ensureAuth()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    if (props.foodLogChanged) {
+    if (foodLogChanged) {
       getFoods()
-      props.setFoodLogChanged(false)
+      setFoodLogChanged(false)
     }
-  }, [props.foodLogChanged])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foodLogChanged, setFoodLogChanged])
 
   return (
     <>
@@ -181,7 +203,7 @@ export default function FoodLog(props) {
                                   </button>
 
                                   <button className="text-blue-500 hover:underline w-16 h-8" onClick={() => setEditField(null)}>
-                                    Cancel
+                                    Save
                                   </button>
                                 </>
                               ) : (
@@ -192,7 +214,7 @@ export default function FoodLog(props) {
                             </div>
                           </div>
                         ))}
-                        <h2 className={`font-thin text-xl text-white ${day.totalCalories > props.calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl`}>{day.totalCalories} total calories for the day</h2>
+                        <h2 className={`font-thin text-xl text-white ${day.totalCalories > calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl`}>{day.totalCalories} total calories for the day</h2>
                       </section>
                     </div>
                   ))

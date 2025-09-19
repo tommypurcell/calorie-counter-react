@@ -22,8 +22,10 @@ module.exports = {
     node: true
   },
   rules: {
-    'max-len': ['error', { code: 255 }],
-    'no-unused-vars': 'warn' // Set this to "warn" instead of "error"
+    'max-len': ['warn', { code: 255 }],
+    'no-unused-vars': 'warn', // Set this to "warn" instead of "error"
+    "react/prop-types": "off",  // TypeScript replaces PropTypes
+
   },
   plugins: ['react', 'react-hooks']
 }
