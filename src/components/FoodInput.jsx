@@ -7,8 +7,6 @@ import axios from 'axios'
 import { supabase } from '../supabase'
 import { useState, useEffect } from 'react'
 
-
-
 axios.defaults.withCredentials = true
 // Docs for edamam api
 // https://developer.edamam.com/edamam-docs-nutrition-api
@@ -108,15 +106,14 @@ export default function FoodInput(props) {
   // Load available dates from Supabase for the current user
   const getDates = async () => {
     if (!userId) return
-    const { data, error } = await supabase
-      .from('foods')
-      .select('eaten_at')
-      .eq('user_id', userId)
+    const { data, error } = await supabase.from('foods').select('eaten_at').eq('user_id', userId)
     if (error) {
       console.error('Error fetching dates:', error.message)
       return
     }
-    const uniqueDates = Array.from(new Set((data || []).map((row) => row.eaten_at))).sort().reverse()
+    const uniqueDates = Array.from(new Set((data || []).map((row) => row.eaten_at)))
+      .sort()
+      .reverse()
     setDates(uniqueDates)
   }
 
@@ -266,40 +263,41 @@ export default function FoodInput(props) {
                     </button>
                   </>
                 ) : (
-                  <div className="flex flex-row gap-2">
+                  <div className="flex flex-col gap-2 items-center w-full">
                     {' '}
-                    <button type="submit" className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
+                    <button type="submit" className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-blue-500 hover:bg-blue-400 text-sm text-center font-medium text-white">
                       Check Calories w API
                     </button>
+                    {/* dropdown hyper ui */}
+                    <details className="group [&_summary::-webkit-details-marker]:hidden">
+                      <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 w-[200px] text-white h-10 bg-slate-500 hover:bg-gray-700">
+                        <span className="text-sm font-medium text-nowrap">Count Calories with AI </span>
 
-                   
+                        <span className="shrink-0 transition duration-300 group-open:-rotate-180">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      </summary>
 
-                    <details className="dropdown flex-row gap-2">
-                    <summary className="btn m-1 flex-row gap-2">
-                      <div className="btn h-full flex flex-row gap-x-4 bg-gray-600 text-white justify-center items-center">
-                      
-                        <span className="text-nowrap">Check Calories w AI</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-robot" viewBox="0 0 16 16">
-                          <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5M3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.6 26.6 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.93.93 0 0 1-.765.935c-.845.147-2.34.346-4.235.346s-3.39-.2-4.235-.346A.93.93 0 0 1 3 9.219zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25 25 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25 25 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135"/>
-                          <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2zM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5"/>
-                        </svg>
-                      </div>
-                    </summary>
-                    <div className="dropdown select-none flex-row focus:outline-none focus:ring-0 gap-2">
-                      <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                      <div className="relative flex flex-row items-center mb-8">
-                        <input
-                          name="apiKey" // Ensure name is present for proper form handling
-                          type="text"
-                          className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm"
-                          placeholder="Enter OpenAI API Key"
-                          value={apiKey}
-                        />
-                      </div>
+                      <ul className="mt-2">
+                        <li>
+                          <input
+                            name="apiKey"
+                            type="text"
+                            className="w-full bg-gray-100 border-1 rounded-lg p-0 m-0 h-8 text-start px-3 border-gray-800 text-sm shadow-sm"
+                            placeholder="Enter OpenAI API Key"
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)} // add this
+                          />
+                        </li>
+                        <li className="w-full">
+                          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-sky-900 hover:underline text-right">
+                            Get API Key
+                          </a>
+                        </li>
                       </ul>
-                    </div>
-                  </details>
-
+                    </details>
                   </div>
                 )}
               </form>

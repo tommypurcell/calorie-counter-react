@@ -14,10 +14,11 @@ axios.defaults.withCredentials = true
 // ***************
 
 export default function FoodLog(props) {
-  const { foodLogChanged, setFoodLogChanged, calorieGoal } = props
+  const { foodLogChanged, setFoodLogChanged } = props
   const isLoggedIn = !!localStorage.getItem('isLoggedIn')
   const [foodLog, setFoodLog] = useState([])
   const [loading, setLoading] = useState(false)
+  const [calorieGoal, setCalorieGoal] = useState(null)
 
   const [editField, setEditField] = useState(null) // Track the specific field being edited
 
@@ -47,11 +48,7 @@ export default function FoodLog(props) {
       setLoading(false)
       return
     }
-    const { data, error } = await supabase
-      .from('foods')
-      .select('id, name, calories, eaten_at')
-      .eq('user_id', user.id)
-      .order('eaten_at', { ascending: false })
+    const { data, error } = await supabase.from('foods').select('id, name, calories, eaten_at').eq('user_id', user.id).order('eaten_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching foods:', error.message)
@@ -102,6 +99,13 @@ export default function FoodLog(props) {
       if (data?.user) {
         localStorage.setItem('isLoggedIn', 'true')
         getFoods()
+
+        // Now fetch profile from profiles
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single()
+        console.log(profile)
+        if (profile) {
+          setCalorieGoal(profile.calorieGoal)
+        }
       } else {
         localStorage.removeItem('isLoggedIn')
       }
