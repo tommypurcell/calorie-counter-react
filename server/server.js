@@ -137,11 +137,11 @@ app.post('/api/gpt', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a nutrition expert. Return ONLY valid JSON array. Format: [{"food": "item name", "calories": number}]'
+            content: 'You are a nutrition expert. Return ONLY valid JSON array with macronutrients. Format: [{"food": "item name", "calories": number, "protein": number, "carbs": number, "fat": number}]. All nutrients in grams. Be realistic with estimates.'
           },
           {
             role: 'user',
-            content: `Estimate calories for: ${foodItem}`
+            content: `Estimate calories and macronutrients (protein, carbs, fat in grams) for: ${foodItem}`
           }
         ],
         temperature: 0.7
