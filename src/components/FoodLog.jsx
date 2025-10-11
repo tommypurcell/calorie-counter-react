@@ -174,7 +174,7 @@ export default function FoodLog(props) {
           <main className="min-h-screen pb-48 pt-10">
             <div>
               <div className="">
-                {foodLog.length > 0 ? (
+                {Array.isArray(foodLog) && foodLog.length > 0 ? (
                   foodLog.map((day, dayIndex) => (
                     <details key={dayIndex} className="group mb-2 xl:w-[700px]">
                       {/* Clickable header */}

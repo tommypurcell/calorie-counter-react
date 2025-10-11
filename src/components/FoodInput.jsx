@@ -186,6 +186,7 @@ export default function FoodInput(props) {
     }
     setFoodLog([])
     setTotalCalories(0)
+    setFoodItem('')
     props.setFoodLogChanged(true)
     getDates()
   }

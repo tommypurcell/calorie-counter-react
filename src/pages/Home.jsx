@@ -8,6 +8,7 @@ import Nav from '../components/Nav'
 import { useState, useEffect } from 'react'
 import CalorieCounter from './CalorieCounter'
 import FoodInput from '../components/FoodInput'
+import { useNavigate } from 'react-router-dom'
 
 import { Link } from 'react-router-dom'
 
@@ -17,12 +18,22 @@ const local_url = process.env.REACT_APP_LOCAL_URL
 export default function Home(props) {
   const numberOfCards = 2
   const cards = [...new Array(numberOfCards)]
+  const navigate = useNavigate()
 
   const [foods, setFoods] = useState([])
   const [foodLogChanged, setFoodLogChanged] = useState(false)
 
   console.log('caloriegoal home', props.calorieGoal)
+  const checkCalGoal = (calorieGoal) => {
+    if (!calorieGoal) {
+      // navigate('/login')
+    }
+  }
 
+  useEffect(() => {
+    checkCalGoal(props.calorieGoal)
+  }),
+    []
   return (
     <div className="w-full h-screen mt-16 flex flex-col lg:flex-row overflow-hidden">
       {/* FoodInput - scrollable on mobile, fixed height on desktop */}
