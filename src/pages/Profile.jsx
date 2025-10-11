@@ -1,17 +1,21 @@
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
-
-axios.defaults.withCredentials = true
-
-const local_url = process.env.REACT_APP_LOCAL_URL
-const render_url = process.env.REACT_APP_RENDER_USA_URL
+// Supabase client for talking to our database and auth
+import { supabase } from '../supabase'
 
 export default function Profile() {
+  // We use navigate to redirect users if they are not logged in
   const navigate = useNavigate()
+
+  // Holds the current profile data shown on the screen
   const [profile, setProfile] = useState({})
+  // The logged-in user's id (from Supabase auth)
+  const [userId, setUserId] = useState(null)
+  // Which field is currently being edited (e.g., 'name', 'email', etc.)
   const [editField, setEditField] = useState(null)
+  // Whether a successful save message should be shown
   const [changesSaved, setChangesSaved] = useState(false)
+  // Controlled input values for the form
   const [fieldValues, setFieldValues] = useState({
     avatar: '',
     name: '',
@@ -20,23 +24,60 @@ export default function Profile() {
   })
 
   useEffect(() => {
-    const getProfile = async () => {
-      try {
-        const response = await axios.get(`${render_url}/profile`, { withCredentials: true })
-        setProfile(response.data)
-        setFieldValues({
-          avatar: response.data.avatar || '',
-          name: response.data.name || '',
-          email: response.data.email || '',
-          calorieGoal: response.data.calorieGoal || ''
-        })
-      } catch (error) {
+    // On first render, load the current user's profile from Supabase.
+    // If there is no profile row yet, create one.
+    const loadProfile = async () => {
+      // 1) Make sure we have a logged-in user
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+      if (!user) {
+        // If not logged in, send users to the login page
+        navigate('/login')
+        return
+      }
+      setUserId(user.id)
+
+      // 2) Ensure a profile row exists for this user, then fetch it
+      await supabase.from('profiles').upsert(
+        { id: user.id, email: user.email || '' },
+        { onConflict: 'id' }
+      )
+
+      // 3) Get the profile fields we care about
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar, name, email, calorieGoal')
+        .eq('id', user.id)
+        .single()
+
+      if (error) {
         console.error('Error fetching profile:', error.message)
+        return
+      }
+
+      // 4) Put the data into component state and form controls
+      setProfile(data)
+      setFieldValues({
+        avatar: data?.avatar || '',
+        name: data?.name || '',
+        email: data?.email || '',
+        calorieGoal: data?.calorieGoal ?? ''
+      })
+
+      // 5) Also sync a few values to localStorage so the navbar updates immediately
+      if (data) {
+        localStorage.setItem('avatar', data.avatar || '')
+        localStorage.setItem('name', data.name || '')
+        if (data.calorieGoal !== undefined && data.calorieGoal !== null) {
+          localStorage.setItem('calorieGoal', String(data.calorieGoal))
+        }
       }
     }
-    getProfile()
-  }, [])
+    loadProfile()
+  }, [navigate])
 
+  // Toggle which field is being edited. Clicking the same field again closes it.
   const handleEditClick = (field) => {
     if (editField === field) {
       setEditField(null)
@@ -45,6 +86,7 @@ export default function Profile() {
     }
   }
 
+  // Keep the form inputs in sync with component state
   const handleChange = (e) => {
     setFieldValues({
       ...fieldValues,
@@ -52,14 +94,45 @@ export default function Profile() {
     })
   }
 
+  // Save the latest changes to Supabase when the user clicks "Save"
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const updatedProfile = { ...fieldValues }
-      await axios.patch(`${render_url}/profile`, updatedProfile)
+      if (!userId) return
+
+      // Build the payload for updating the profile
+      // Note: we convert calorieGoal to a number (or null if left blank)
+      const updatedProfile = {
+        avatar: fieldValues.avatar,
+        name: fieldValues.name,
+        email: fieldValues.email,
+        calorieGoal: fieldValues.calorieGoal === '' ? null : Number(fieldValues.calorieGoal)
+      }
+
+      // Update the 'profiles' table for this user
+      const { error } = await supabase
+        .from('profiles')
+        .update(updatedProfile)
+        .eq('id', userId)
+
+      if (error) {
+        console.error('Error updating profile:', error.message)
+        return
+      }
+
+      // Show a success message and reflect the new data immediately in the UI
       setChangesSaved(true)
       setEditField(null)
-      setProfile(updatedProfile)
+      setProfile((prev) => ({ ...prev, ...updatedProfile }))
+
+      // Keep navbar and other UI in sync via localStorage
+      localStorage.setItem('avatar', updatedProfile.avatar || '')
+      localStorage.setItem('name', updatedProfile.name || '')
+      if (updatedProfile.calorieGoal !== null && updatedProfile.calorieGoal !== undefined) {
+        localStorage.setItem('calorieGoal', String(updatedProfile.calorieGoal))
+      } else {
+        localStorage.removeItem('calorieGoal')
+      }
     } catch (error) {
       console.error('Error updating profile:', error.message)
     }
@@ -68,9 +141,17 @@ export default function Profile() {
   return (
     <>
       <div className="max-w-3xl mx-auto py-10">
+        {/* Page title */}
         <h1 className="text-3xl font-semibold mb-6">Personal info</h1>
+        {changesSaved && (
+          <div className="mb-4 text-green-700 bg-green-100 border border-green-200 rounded px-3 py-2">
+            Changes saved.
+          </div>
+        )}
+        {/* The entire profile form. Each row is editable. */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
+            {/* Profile Image (avatar URL) */}
             <div className="flex justify-between items-center border-b border-gray-200 pb-3">
               <div>
                 <h2 className="text-lg font-medium">Profile Image</h2>

@@ -6,12 +6,13 @@ import axios from 'axios'
 import Nav from '../components/Nav'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ReferenceLine, CartesianGrid } from 'recharts'
 import FoodInput from '../components/FoodInput'
+import { supabase } from '../supabase'
 
 const render_url = process.env.REACT_APP_RENDER_USA_URL
 const local_url = process.env.REACT_APP_LOCAL_URL
 
 export default function Stats(props) {
-  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  const isLoggedIn = !!localStorage.getItem('isLoggedIn')
   // state variable
   const [foodData, setFoodData] = useState([])
   const [data, setData] = useState([])
@@ -37,7 +38,16 @@ export default function Stats(props) {
   }
 
   useEffect(() => {
-    getCalories()
+    const ensureAuth = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) {
+        localStorage.setItem('isLoggedIn', 'true')
+        getCalories()
+      } else {
+        localStorage.removeItem('isLoggedIn')
+      }
+    }
+    ensureAuth()
   }, [])
 
   return (

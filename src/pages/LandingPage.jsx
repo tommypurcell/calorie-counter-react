@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 axios.defaults.withCredentials = true
-// trying this one using edamam instead of spoonacular
+// using edamam instead of spoonacular
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
 let render_url = 'https://calorie-counter-api-portalversion.onrender.com'

@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
 import axios from 'axios'
-import React, { Component } from 'react'
+import React from 'react'
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 axios.defaults.withCredentials = true
 
@@ -12,32 +13,35 @@ const render_url = process.env.REACT_APP_RENDER_USA_URL
 console.log('Local URL:', local_url)
 console.log('Render URL:', render_url) // This should print the URL
 
-export default function Nav(props) {
-  const isLoggedIn = localStorage.getItem('isLoggedIn')
+export default function Nav() {
+  // Track login state so Nav re-renders immediately on auth changes
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('isLoggedIn'))
   const navigate = useNavigate()
 
+  
   const [profilePic, setProfilePic] = useState(localStorage.getItem('avatar'))
-
+  const [displayName, setDisplayName] = useState(localStorage.getItem('name') || '')
+  
   const [dropdownOpen, setDropdownOpen] = useState(false)
-
+  
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen)
   }
 
+  // Compute an initial to show when the user has no avatar image set
+  const initial = (displayName && displayName.length > 0) ? displayName.charAt(0).toUpperCase() : 'U'
+
   const requestLogout = async (e) => {
     e.preventDefault()
     try {
-      // Clear local storage and update state first
+      // Close the dropdown immediately on click
+      setDropdownOpen(false)
+      await supabase.auth.signOut()
       localStorage.removeItem('isLoggedIn')
       localStorage.removeItem('avatar')
       localStorage.removeItem('name')
       localStorage.removeItem('calorieGoal')
-      setProfilePic(null) // Reset profile picture state
-
-      // Then make the API call
-      await axios.get(`${render_url}/logout`)
-
-      // Finally, navigate to the login page
+      setProfilePic(null)
       navigate('/login')
     } catch (error) {
       console.error('Logout error:', error)
@@ -46,22 +50,76 @@ export default function Nav(props) {
 
   // Inside your Nav component
   useEffect(() => {
-    const getProfile = async () => {
-      if (!isLoggedIn) {
+    // Listen for Supabase auth changes to update Nav instantly
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setIsLoggedIn(true)
+        localStorage.setItem('isLoggedIn', 'true')
+      } else {
+        setIsLoggedIn(false)
+        localStorage.removeItem('isLoggedIn')
+        setDisplayName('')
         setProfilePic(null)
       }
+    })
+
+    // Also respond to localStorage updates (e.g., after profile save)
+    const handleStorage = (e) => {
+      if (e.key === 'name') setDisplayName(e.newValue || '')
+      if (e.key === 'avatar') setProfilePic(e.newValue || null)
+      if (e.key === 'isLoggedIn') setIsLoggedIn(!!e.newValue)
+    }
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      data.subscription.unsubscribe()
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncSession = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!data?.user) {
+        setProfilePic(null)
+        localStorage.removeItem('isLoggedIn')
+        setDisplayName('')
+        return
+      }
+      localStorage.setItem('isLoggedIn', 'true')
+      setProfilePic(localStorage.getItem('avatar'))
+
+      // Prefer name from localStorage if present
+      const cachedName = localStorage.getItem('name')
+      if (cachedName && cachedName.length > 0) {
+        setDisplayName(cachedName)
+        return
+      }
+
+      // Otherwise fetch from Supabase profiles; fallback to email username
       try {
-        const response = await axios.get(`${render_url}/profile`, {
-          withCredentials: true // Include credentials in the request
-        })
-        console.log('Response:', response)
-        console.log(response.data.avatar)
-        setProfilePic(response.data.avatar)
-      } catch (error) {
-        alert(error.message)
+        const userId = data.user.id
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name, avatar')
+          .eq('id', userId)
+          .single()
+
+        const fallback = (data.user?.user_metadata?.full_name) || (data.user?.email?.split('@')[0]) || 'User'
+        const nameToUse = profile?.name || fallback
+        setDisplayName(nameToUse)
+        localStorage.setItem('name', nameToUse)
+
+        if (profile?.avatar) {
+          setProfilePic(profile.avatar)
+          localStorage.setItem('avatar', profile.avatar)
+        }
+      } catch (err) {
+        const fallback = (data.user?.user_metadata?.full_name) || (data.user?.email?.split('@')[0]) || 'User'
+        setDisplayName(fallback)
       }
     }
-    getProfile()
+    syncSession()
   }, [isLoggedIn])
 
   return (
@@ -82,15 +140,21 @@ export default function Nav(props) {
           <div className="relative">
             <div onClick={toggleDropdown} className="flex hover:cursor-pointer items-center space-x-2 focus:outline-none">
               <div className="relative">
-                <div className="h-10 w-10 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${profilePic})` }}></div>
+                {profilePic ? (
+                  <div className="h-10 w-10 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${profilePic})` }}></div>
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gray-600 text-white flex items-center justify-center">
+                    <span className="font-semibold">{initial}</span>
+                  </div>
+                )}
                 <span className="absolute top-0 right-0 h-4 w-4 bg-red-600 text-white text-xs flex items-center justify-center rounded-full">1</span>
               </div>
-              <span className="text-white">Demo</span>
+              <span className="text-white">{displayName || 'User'}</span>
               <i className="fa-solid fa-caret-down fa-sm text-yellow-500"></i>
             </div>
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-60 bg-white rounded-md shadow-lg py-2 z-20">
-                <NavLink to="/profile" className="flex flex-row justify gap-x-6 items-center px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-gray-800">
+                <NavLink to="/profile" onClick={() => setDropdownOpen(false)} className="flex flex-row justify gap-x-6 items-center px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-gray-800">
                   <i className="fa-solid fa-user text-gray-500"></i>
                   <span className="text-gray-700">Profile</span>
                 </NavLink>

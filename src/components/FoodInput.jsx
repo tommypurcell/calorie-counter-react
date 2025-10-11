@@ -2,65 +2,45 @@
 
 import React from 'react'
 import axios from 'axios'
+// import Nav from '../components/Nav'
+
+import { supabase } from '../supabase'
 import { useState, useEffect } from 'react'
-import Nav from '../components/Nav'
 
 axios.defaults.withCredentials = true
 // Docs for edamam api
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-const local_url = process.env.REACT_APP_LOCAL_URL
+// NOTE: We now log foods directly to Supabase (no Render API)
 
 export default function FoodInput(props) {
-  const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'
-  const applicationID = '2dafcce0'
-  const [foodItem, setFoodItem] = useState('')
-  const [foodLog, setFoodLog] = useState([])
-  const [totalCalories, setTotalCalories] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(``)
+  const applicationID = process.env.REACT_APP_EDAMAM_APPLICATION_ID
+  const applicationKey = process.env.REACT_APP_EDAMAM_APPLICATION_KEY
+
   const [dates, setDates] = useState([])
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userId, setUserId] = useState('')
+  const [message, setMessage] = useState('')
+  const [foodLog, setFoodLog] = useState([])
+  const [foodItem, setFoodItem] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(``)
+  const [totalCalories, setTotalCalories] = useState(0)
 
   // check if user is logged in
   const checkLogin = async () => {
-    console.log('checking login...')
-    try {
-      let login = await axios.get(`${render_url}/profile`, {
-        withCredentials: true,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500 // default is to resolve only on 2xx, this allows 401
-        }
-      })
-      if (login.data == 'User not logged in') {
-        console.log('user not logged in')
-        setIsLoggedIn(false)
-      } else {
-        setIsLoggedIn(true)
-        setUserId(login._id)
-      }
-    } catch (err) {
-      console.error('Error fetching profile:', err.message)
-    }
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
+    setIsLoggedIn(!!user)
+    setUserId(user ? user.id : '')
   }
 
-  // set up date object
-  const date = new Date()
-  let day = date.getDate()
-  let month = date.getMonth() + 1
-  let year = date.getFullYear()
-
-  // set date format
-  if (day < 10) {
-    day = `0${day}`
-  }
-  if (month < 10) {
-    month = `0${month}`
-  }
-  const today = `${year}-${month}-${day}`
+  // Helper function to get user's local date in YYYY-MM-DD format
+  const getTodayDate = () => new Date().toLocaleDateString('en-CA')
 
   const getFoodData = async (e) => {
+    if (!foodItem) {
+      setMessage('⚠️ Please enter a food item first.')
+    }
     e.preventDefault()
     const response = await axios.get('https://api.edamam.com/api/nutrition-data', {
       params: {
@@ -82,73 +62,133 @@ export default function FoodInput(props) {
   const getGptEstimate = async (e) => {
     e.preventDefault()
 
+    if (!foodItem) {
+      setMessage('⚠️ Please enter a food item first.')
+      return
+    }
+
+    setMessage('🔄 Getting AI estimate...')
+
     try {
+      // Get current user session token
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        setMessage('❌ Please log in to use AI estimates.')
+        return
+      }
+
+      // Call backend with auth token
       const response = await axios.post(
-        `${render_url}/gpt-nutrition`,
+        'http://localhost:5050/api/gpt',
+        { foodItem },
         {
-          foodItem: foodItem // Submitting the food item to the GPT route
-        },
-        { withCredentials: true }
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
       )
 
-      console.log('Nutrition data:', response.data)
+      console.log('OpenAI response:', response.data)
+
+      // Parse the GPT response
+      const content = response.data.choices[0].message.content.trim()
+
+      // try to parse clean JSON, else fall back gracefully
+      let entries
+      try {
+        entries = JSON.parse(content)
+      } catch {
+        console.warn("Model response wasn't pure JSON. Full text:", content)
+        // attempt a fallback — extract manually if model adds explanation text
+        const start = content.indexOf('[')
+        const end = content.lastIndexOf(']')
+        if (start !== -1 && end !== -1) {
+          const possibleJson = content.slice(start, end + 1)
+          try {
+            entries = JSON.parse(possibleJson)
+          } catch {
+            throw new Error('Model output not valid JSON')
+          }
+        } else {
+          throw new Error('Model output not valid JSON')
+        }
+      }
 
       // Iterate over the entries array
-      for (let entry of response.data.entries) {
-        // Creating a new food item from the GPT response
+      for (let entry of entries) {
         const newFoodItem = {
-          name: entry.food, // Food name from GPT response
-          calories: entry.calories // Calories from GPT response
+          name: entry.food,
+          calories: entry.calories
         }
 
         // Use functional updates to ensure correct state updates
         setFoodLog((prevFoodLog) => [newFoodItem, ...prevFoodLog])
         setTotalCalories((prevTotalCalories) => prevTotalCalories + entry.calories)
       }
+
+      // Clear the input and show success
+      setFoodItem('')
+      setMessage('✅ AI estimate added!')
+      setTimeout(() => setMessage(''), 3000)
     } catch (error) {
-      console.error('Error fetching GPT nutrition data:', error.message)
-      // Optionally handle the error state
+      console.error('Error fetching GPT nutrition data:', error)
+
+      // Handle rate limit
+      if (error.response?.status === 429) {
+        setMessage('⛔ Daily limit reached! (3/day). Try again tomorrow.')
+      } else if (error.response?.status === 401) {
+        setMessage('❌ Session expired. Please log in again.')
+      } else {
+        setMessage('❌ Error getting AI estimate. Try again.')
+      }
     }
   }
 
-  // format selected date
-  const formatDate = (date) => {
-    if (date) {
-      let newDate = date.split('-')
-      let year = newDate[0]
-      let month = newDate[1]
-      let day = newDate[2]
-      return `${month}/${day}/${year}`
-    } else {
-      return null
-    }
-  }
+  // format selected date (reserved for future UI uses)
+  // const formatDate = (date) => {
+  //   if (!date) return null
+  //   const [y, m, d] = date.split('-')
+  //   return `${m}/${d}/${y}`
+  // }
 
   // get dates from database and set state
+  // Load available dates from Supabase for the current user
   const getDates = async () => {
-    let datesArr = []
-    const response = await axios.get(`${render_url}/foods`)
-    for (let item of response.data) {
-      datesArr.push(item.date)
+    if (!userId) return
+    const { data, error } = await supabase.from('foods').select('eaten_at').eq('user_id', userId)
+    if (error) {
+      console.error('Error fetching dates:', error.message)
+      return
     }
-    setDates(datesArr)
+    const uniqueDates = Array.from(new Set((data || []).map((row) => row.eaten_at)))
+      .sort()
+      .reverse()
+    setDates(uniqueDates)
   }
 
   // post food item to database
+  // Persist queued items to Supabase
   const postFoodItems = async () => {
-    for (let item of foodLog) {
-      const response = await axios.post(`${render_url}/foods`, {
-        userId: userId,
-        name: item.name,
-        calories: item.calories,
-        date: selectedDate,
-        timestamp: Date.now()
-      })
+    if (!userId || foodLog.length === 0) return
+    const rows = foodLog.map((item) => ({
+      user_id: userId,
+      name: item.name,
+      calories: item.calories,
+      eaten_at: selectedDate
+    }))
+    const { error } = await supabase.from('foods').insert(rows)
+    if (error) {
+      console.error('Error saving foods:', error.message)
+      return
     }
     setFoodLog([])
     setTotalCalories(0)
     setFoodItem('')
     props.setFoodLogChanged(true)
+    getDates()
   }
 
   const handleInputChange = (e) => {
@@ -157,7 +197,7 @@ export default function FoodInput(props) {
 
   const removeFoodItem = (indexToRemove) => {
     // Filter out the item at the specified index
-    const newFoodLog = foodLog.filter((item, index) => index !== indexToRemove)
+    const newFoodLog = foodLog.filter((_item, index) => index !== indexToRemove)
     console.log('new Food log', newFoodLog)
     setFoodLog(newFoodLog)
 
@@ -178,9 +218,45 @@ export default function FoodInput(props) {
   }
 
   useEffect(() => {
-    setSelectedDate(today)
-    getDates()
+    setSelectedDate(getTodayDate())
     checkLogin()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (userId) {
+      getDates()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
+
+  useEffect(() => {
+    const testSession = async () => {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
+
+      if (session) {
+        console.log('✅ Session exists!')
+        console.log('Token:', session.access_token.substring(0, 30) + '...')
+
+        const res = await fetch('http://localhost:5050/api/gpt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ foodItem: 'apple' })
+        })
+
+        const data = await res.json()
+        console.log('Backend response:', data)
+      } else {
+        console.log('❌ No session - need to log in')
+      }
+    }
+
+    testSession()
   }, [])
 
   return (
@@ -210,7 +286,7 @@ export default function FoodInput(props) {
                         name="foodItem" // Ensure name is present for proper form handling
                         type="text"
                         className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm"
-                        placeholder="1 plate of fried rice"
+                        placeholder="Enter food item here"
                         value={foodItem}
                         onChange={handleInputChange}
                       />
@@ -257,7 +333,7 @@ export default function FoodInput(props) {
                     <h2 className="text-gray-500">
                       Log foods for{' '}
                       <select className="form-select form-select-lg mb-3" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
-                        <option value={today}>Today</option>
+                        <option value={getTodayDate()}>Today</option>
                         {dates.map((item, index) => (
                           <option key={index} value={item}>
                             {item}
@@ -265,26 +341,23 @@ export default function FoodInput(props) {
                         ))}
                       </select>
                     </h2>
-                    <button
-                      onClick={() => {
-                        postFoodItems()
-                        setFoodLog([])
-                      }}
-                      className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white"
-                    >
-                      Add to food log
+                    <button type="button" onClick={postFoodItems} className="block w-full rounded-lg bg-green-600 hover:bg-green-500 px-5 py-3 text-sm font-medium text-white">
+                      Save to Log
                     </button>
                   </>
                 ) : (
-                  <div className="flex flex-row gap-2">
-                    {' '}
-                    <button type="submit" className="block whitespace-nowrap w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
-                      Check Calories w API
-                    </button>
-                    <button onClick={getGptEstimate} type="button" className="block w-full rounded-lg bg-blue-500 hover:bg-blue-400 px-5 py-3 text-sm font-medium text-white">
-                      Check Cal w AI
-                    </button>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-2 items-center w-full">
+                      {' '}
+                      {message && <p className={`text-sm mt-2 ${message.startsWith('✅') ? 'text-green-600' : 'text-red-500'}`}>{message}</p>}
+                      <button type="submit" className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-blue-500 hover:bg-blue-400 text-sm text-center font-medium text-white">
+                        Check Calories w API
+                      </button>
+                      <button type="button" onClick={getGptEstimate} className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm text-center font-medium text-white">
+                        Estimate with AI (3/day)
+                      </button>
+                    </div>
+                  </>
                 )}
               </form>
             </div>
