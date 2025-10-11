@@ -38,17 +38,21 @@ export default function FoodLog(props) {
     return Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date))
   }
 
-  // get all foods for current logged in user from Supabase
+  // get all foods for current logged in user from Supabase (including macros)
   const getFoods = async () => {
     setLoading(true)
     const {
       data: { user }
     } = await supabase.auth.getUser()
-    if (!user) {
+    if (!user || !user.id) {
+      console.log('⚠️ No user found, skipping food fetch')
       setLoading(false)
       return
     }
-    const { data, error } = await supabase.from('foods').select('id, name, calories, eaten_at').eq('user_id', user.id).order('eaten_at', { ascending: false })
+
+    console.log('✅ Fetching foods for user:', user.id)
+
+    const { data, error } = await supabase.from('foods').select('id, name, calories, protein, carbs, fat, eaten_at').eq('user_id', user.id).order('eaten_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching foods:', error.message)
@@ -191,9 +195,21 @@ export default function FoodLog(props) {
                       <section className=" bg-white my-0 rounded-b-xl">
                         {day.foods.map((food, foodIndex) => (
                           <div key={foodIndex} className={`flex flex-row gap-x-4 p-2 ${foodIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
-                            <div className="flex flex-row justify-between w-full">
-                              <p className="text-xl text-gray-800 font-normal w-64">{food.name}</p>
-                              <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
+                            <div className="flex flex-row justify-between w-full items-center">
+                              <p className="text-sm text-gray-800 font-normal w-64">{food.name}</p>
+
+                              <div className="flex flex-row gap-x-2 items-center">
+                                {console.log(food)}
+                                {(food.protein || food.carbs || food.fat) && (
+                                  <>
+                                    {food.protein && <p className="text-sm text-gray-500 font-semibold">Protein {Math.round(Number(food.protein))}g</p>}
+                                    {food.carbs && <p className="text-sm text-gray-500 font-semibold">Carbs {Math.round(Number(food.carbs))}g</p>}
+                                    {food.fat && <p className="text-sm text-gray-500 font-semibold">Fat {Math.round(Number(food.fat))}g</p>}
+                                  </>
+                                )}
+
+                                <p className="text-sm text-gray-700 font-semibold">{food.calories} cal</p>
+                              </div>
                             </div>
                             <div className="food-log-buttons flex flex-row gap-2">
                               {editField === `${dayIndex}-${foodIndex}` ? (
