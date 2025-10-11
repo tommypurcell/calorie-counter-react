@@ -5,7 +5,7 @@ import axios from 'axios'
 import { supabase } from '../supabase'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-
+import { groupFoodsByDate, formatDate } from '../lib/utils'
 axios.defaults.withCredentials = true
 
 // ***************
@@ -170,15 +170,25 @@ export default function FoodLog(props) {
       ) : isLoggedIn ? (
         <>
           {' '}
-          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl">Food Log</h1>
-          <main className="food-log-container min-h-screen pb-48 pt-10">
+          <h1 className="text-center text-2xl font-bold text-gray-700 sm:text-3xl sticky top-0 bg-white z-10">Food Log</h1>
+          <main className="min-h-screen pb-48 pt-10">
             <div>
               <div className="">
                 {foodLog.length > 0 ? (
                   foodLog.map((day, dayIndex) => (
-                    <div key={dayIndex}>
-                      <h3 className="text-gray-700 font-bold text-lg rounded-t-md bg-gray-200 px-2 pt-2">{day.date}</h3>
-                      <section className="food-log-item mt-0 mb-5 xl:w-[700px]">
+                    <details key={dayIndex} className="group mb-2 xl:w-[700px]">
+                      {/* Clickable header */}
+                      <summary className="flex cursor-pointer items-center justify-between bg-gray-200 px-2 py-2 rounded-xl group-open:rounded-b-none">
+                        <h3 className="text-gray-700 font-bold text-lg">{formatDate(day.date)}</h3>
+                        <span className="shrink-0 transition duration-300 group-open:-rotate-180">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      </summary>
+
+                      {/* Foods list */}
+                      <section className=" bg-white my-0 rounded-b-xl">
                         {day.foods.map((food, foodIndex) => (
                           <div key={foodIndex} className={`flex flex-row gap-x-4 p-2 ${foodIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
                             <div className="flex flex-row justify-between w-full">
@@ -186,7 +196,6 @@ export default function FoodLog(props) {
                               <p className="text-lg text-gray-500 font-semibold">{food.calories} cal</p>
                             </div>
                             <div className="food-log-buttons flex flex-row gap-2">
-                              {/* Conditionally render edit buttons for the current food item */}
                               {editField === `${dayIndex}-${foodIndex}` ? (
                                 <>
                                   <button className="border-1 border-blue-500 bg-blue-100 text-blue-500 hover:underline rounded w-10 h-8" onClick={() => addCalories(dayIndex, foodIndex)}>
@@ -205,7 +214,6 @@ export default function FoodLog(props) {
                                   >
                                     Remove
                                   </button>
-
                                   <button className="text-blue-500 hover:underline w-16 h-8" onClick={() => setEditField(null)}>
                                     Save
                                   </button>
@@ -218,9 +226,10 @@ export default function FoodLog(props) {
                             </div>
                           </div>
                         ))}
-                        <h2 className={`font-thin text-xl text-white ${day.totalCalories > calorieGoal ? 'bg-red-700' : 'bg-green-700'} p-1 rounded-b-xl`}>{day.totalCalories} total calories for the day</h2>
+
+                        <h2 className={`font-thin text-xl text-white ${day.totalCalories > calorieGoal ? 'bg-red-700' : 'bg-green-700'} px-2 rounded-b-xl`}>{day.totalCalories} total calories for the day</h2>
                       </section>
-                    </div>
+                    </details>
                   ))
                 ) : (
                   <div>

@@ -24,22 +24,16 @@ export default function Home(props) {
   console.log('caloriegoal home', props.calorieGoal)
 
   return (
-    <div className="p-4 w-full h-screen">
-
-<div className="grid grid-cols-4">
-        <div className="col-span-2 ">
-          <FoodInput setFoodLogChanged={setFoodLogChanged} />
-        </div>
-        <div className="col-span-2 ">
-          <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} calorieGoal={props.calorieGoal} />
-        </div>
+    <div className="w-full h-screen mt-16 flex flex-col lg:flex-row overflow-hidden">
+      {/* FoodInput - scrollable on mobile, fixed height on desktop */}
+      <div className="w-full lg:w-1/2 overflow-y-auto flex-shrink-0 lg:h-full">
+        <FoodInput setFoodLogChanged={setFoodLogChanged} />
       </div>
 
-
+      {/* FoodLog - scrollable on mobile and desktop */}
+      <div className="w-full lg:w-1/2 overflow-y-auto flex-shrink-0 lg:h-full">
+        <FoodLog loggedIn={props.loggedIn} foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} calorieGoal={props.calorieGoal} />
+      </div>
     </div>
-
-    
-     
-
   )
 }

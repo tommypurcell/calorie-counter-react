@@ -18,8 +18,8 @@ export default function FoodInput(props) {
   const applicationKey = process.env.REACT_APP_EDAMAM_APPLICATION_KEY
 
   const [dates, setDates] = useState([])
-  const [apiKey, setApiKey] = useState('')
   const [userId, setUserId] = useState('')
+  const [message, setMessage] = useState('')
   const [foodLog, setFoodLog] = useState([])
   const [foodItem, setFoodItem] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -34,22 +34,13 @@ export default function FoodInput(props) {
     setUserId(user ? user.id : '')
   }
 
-  // set up date object
-  const date = new Date()
-  let day = date.getDate()
-  let year = date.getFullYear()
-  let month = date.getMonth() + 1
-
-  // set date format
-  if (day < 10) {
-    day = `0${day}`
-  }
-  if (month < 10) {
-    month = `0${month}`
-  }
-  const today = `${year}-${month}-${day}`
+  // Helper function to get user's local date in YYYY-MM-DD format
+  const getTodayDate = () => new Date().toLocaleDateString('en-CA')
 
   const getFoodData = async (e) => {
+    if (!foodItem) {
+      setMessage('⚠️ Please enter a food item first.')
+    }
     e.preventDefault()
     const response = await axios.get('https://api.edamam.com/api/nutrition-data', {
       params: {
@@ -71,27 +62,88 @@ export default function FoodInput(props) {
   const getGptEstimate = async (e) => {
     e.preventDefault()
 
-    try {
-      // Placeholder: AI estimation endpoint removed. Keep structure for future.
-      const response = { data: { entries: [] } }
+    if (!foodItem) {
+      setMessage('⚠️ Please enter a food item first.')
+      return
+    }
 
-      console.log('Nutrition data:', response.data)
+    setMessage('🔄 Getting AI estimate...')
+
+    try {
+      // Get current user session token
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        setMessage('❌ Please log in to use AI estimates.')
+        return
+      }
+
+      // Call backend with auth token
+      const response = await axios.post(
+        'http://localhost:5050/api/gpt',
+        { foodItem },
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
+      )
+
+      console.log('OpenAI response:', response.data)
+
+      // Parse the GPT response
+      const content = response.data.choices[0].message.content.trim()
+
+      // try to parse clean JSON, else fall back gracefully
+      let entries
+      try {
+        entries = JSON.parse(content)
+      } catch {
+        console.warn("Model response wasn't pure JSON. Full text:", content)
+        // attempt a fallback — extract manually if model adds explanation text
+        const start = content.indexOf('[')
+        const end = content.lastIndexOf(']')
+        if (start !== -1 && end !== -1) {
+          const possibleJson = content.slice(start, end + 1)
+          try {
+            entries = JSON.parse(possibleJson)
+          } catch {
+            throw new Error('Model output not valid JSON')
+          }
+        } else {
+          throw new Error('Model output not valid JSON')
+        }
+      }
 
       // Iterate over the entries array
-      for (let entry of response.data.entries) {
-        // Creating a new food item from the GPT response
+      for (let entry of entries) {
         const newFoodItem = {
-          name: entry.food, // Food name from GPT response
-          calories: entry.calories // Calories from GPT response
+          name: entry.food,
+          calories: entry.calories
         }
 
         // Use functional updates to ensure correct state updates
         setFoodLog((prevFoodLog) => [newFoodItem, ...prevFoodLog])
         setTotalCalories((prevTotalCalories) => prevTotalCalories + entry.calories)
       }
+
+      // Clear the input and show success
+      setFoodItem('')
+      setMessage('✅ AI estimate added!')
+      setTimeout(() => setMessage(''), 3000)
     } catch (error) {
-      console.error('Error fetching GPT nutrition data:', error.message)
-      // Optionally handle the error state
+      console.error('Error fetching GPT nutrition data:', error)
+
+      // Handle rate limit
+      if (error.response?.status === 429) {
+        setMessage('⛔ Daily limit reached! (3/day). Try again tomorrow.')
+      } else if (error.response?.status === 401) {
+        setMessage('❌ Session expired. Please log in again.')
+      } else {
+        setMessage('❌ Error getting AI estimate. Try again.')
+      }
     }
   }
 
@@ -144,7 +196,7 @@ export default function FoodInput(props) {
 
   const removeFoodItem = (indexToRemove) => {
     // Filter out the item at the specified index
-    const newFoodLog = foodLog.filter((item, index) => index !== indexToRemove)
+    const newFoodLog = foodLog.filter((_item, index) => index !== indexToRemove)
     console.log('new Food log', newFoodLog)
     setFoodLog(newFoodLog)
 
@@ -165,9 +217,10 @@ export default function FoodInput(props) {
   }
 
   useEffect(() => {
-    setSelectedDate(today)
+    setSelectedDate(getTodayDate())
     checkLogin()
-  }, [today])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (userId) {
@@ -175,6 +228,35 @@ export default function FoodInput(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
+
+  useEffect(() => {
+    const testSession = async () => {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession()
+
+      if (session) {
+        console.log('✅ Session exists!')
+        console.log('Token:', session.access_token.substring(0, 30) + '...')
+
+        const res = await fetch('http://localhost:5050/api/gpt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ foodItem: 'apple' })
+        })
+
+        const data = await res.json()
+        console.log('Backend response:', data)
+      } else {
+        console.log('❌ No session - need to log in')
+      }
+    }
+
+    testSession()
+  }, [])
 
   return (
     <>
@@ -203,7 +285,7 @@ export default function FoodInput(props) {
                         name="foodItem" // Ensure name is present for proper form handling
                         type="text"
                         className="w-full rounded-lg p-0 m-0 h-12 text-start px-3 border-gray-200 text-sm shadow-sm"
-                        placeholder="1 plate of fried rice"
+                        placeholder="Enter food item here"
                         value={foodItem}
                         onChange={handleInputChange}
                       />
@@ -250,7 +332,7 @@ export default function FoodInput(props) {
                     <h2 className="text-gray-500">
                       Log foods for{' '}
                       <select className="form-select form-select-lg mb-3" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
-                        <option value={today}>Today</option>
+                        <option value={getTodayDate()}>Today</option>
                         {dates.map((item, index) => (
                           <option key={index} value={item}>
                             {item}
@@ -263,42 +345,18 @@ export default function FoodInput(props) {
                     </button>
                   </>
                 ) : (
-                  <div className="flex flex-col gap-2 items-center w-full">
-                    {' '}
-                    <button type="submit" className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-blue-500 hover:bg-blue-400 text-sm text-center font-medium text-white">
-                      Check Calories w API
-                    </button>
-                    {/* dropdown hyper ui */}
-                    <details className="group [&_summary::-webkit-details-marker]:hidden">
-                      <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 w-[200px] text-white h-10 bg-slate-500 hover:bg-gray-700">
-                        <span className="text-sm font-medium text-nowrap">Count Calories with AI </span>
-
-                        <span className="shrink-0 transition duration-300 group-open:-rotate-180">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </span>
-                      </summary>
-
-                      <ul className="mt-2">
-                        <li>
-                          <input
-                            name="apiKey"
-                            type="text"
-                            className="w-full bg-gray-100 border-1 rounded-lg p-0 m-0 h-8 text-start px-3 border-gray-800 text-sm shadow-sm"
-                            placeholder="Enter OpenAI API Key"
-                            value={apiKey}
-                            onChange={(e) => setApiKey(e.target.value)} // add this
-                          />
-                        </li>
-                        <li className="w-full">
-                          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-sky-900 hover:underline text-right">
-                            Get API Key
-                          </a>
-                        </li>
-                      </ul>
-                    </details>
-                  </div>
+                  <>
+                    <div className="flex flex-col gap-2 items-center w-full">
+                      {' '}
+                      {message && <p className={`text-sm mt-2 ${message.startsWith('✅') ? 'text-green-600' : 'text-red-500'}`}>{message}</p>}
+                      <button type="submit" className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-blue-500 hover:bg-blue-400 text-sm text-center font-medium text-white">
+                        Check Calories w API
+                      </button>
+                      <button type="button" onClick={getGptEstimate} className="block whitespace-nowrap w-[200px] h-10 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm text-center font-medium text-white">
+                        Estimate with AI (3/day)
+                      </button>
+                    </div>
+                  </>
                 )}
               </form>
             </div>

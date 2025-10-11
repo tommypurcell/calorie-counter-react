@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import Nav from '../components/Nav'
 
 axios.defaults.withCredentials = true
-// trying this one using edamam instead of spoonacular
+// using edamam instead of spoonacular
 // https://developer.edamam.com/edamam-docs-nutrition-api
 
 const render_url = process.env.REACT_APP_RENDER_USA_URL
@@ -15,7 +15,7 @@ const local_url = process.env.REACT_APP_LOCAL_URL
 export default function CalorieCounter(props) {
   const applicationKey = '21bface20dc29be8fe5d8bcd08d14d33'
   const applicationID = '2dafcce0'
-  
+
   const [dates, setDates] = useState([])
   const [userId, setUserId] = useState('')
   const [foodLog, setFoodLog] = useState([])
