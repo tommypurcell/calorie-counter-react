@@ -50,13 +50,19 @@ export default function FoodInput(props) {
       }
     })
 
+    // Extract macros from Edamam response
+    const totalNutrients = response.data.totalNutrients || {}
+
     const newFoodItem = {
       name: foodItem,
-      calories: response.data.calories
+      calories: response.data.calories || 0,
+      protein: totalNutrients.PROCNT?.quantity || null, // Protein in grams
+      carbs: totalNutrients.CHOCDF?.quantity || null, // Carbs in grams
+      fat: totalNutrients.FAT?.quantity || null // Fat in grams
     }
+
     setFoodLog([newFoodItem, ...foodLog])
-    setTotalCalories(totalCalories + response.data.calories)
-    // getGptEstimate()
+    setTotalCalories(totalCalories + newFoodItem.calories)
   }
 
   const getGptEstimate = async (e) => {
@@ -121,12 +127,15 @@ export default function FoodInput(props) {
       for (let entry of entries) {
         const newFoodItem = {
           name: entry.food,
-          calories: entry.calories
+          calories: entry.calories || 0,
+          protein: entry.protein || null,
+          carbs: entry.carbs || null,
+          fat: entry.fat || null
         }
 
         // Use functional updates to ensure correct state updates
         setFoodLog((prevFoodLog) => [newFoodItem, ...prevFoodLog])
-        setTotalCalories((prevTotalCalories) => prevTotalCalories + entry.calories)
+        setTotalCalories((prevTotalCalories) => prevTotalCalories + newFoodItem.calories)
       }
 
       // Clear the input and show success
@@ -170,13 +179,16 @@ export default function FoodInput(props) {
   }
 
   // post food item to database
-  // Persist queued items to Supabase
+  // Persist queued items to Supabase with macros
   const postFoodItems = async () => {
     if (!userId || foodLog.length === 0) return
     const rows = foodLog.map((item) => ({
       user_id: userId,
       name: item.name,
       calories: item.calories,
+      protein: item.protein, // Can be null
+      carbs: item.carbs, // Can be null
+      fat: item.fat, // Can be null
       eaten_at: selectedDate
     }))
     const { error } = await supabase.from('foods').insert(rows)
@@ -303,6 +315,14 @@ export default function FoodInput(props) {
                             <div className="flex flex-col items-start">
                               <p className="text-4xl">{item.calories} Calories</p>
                               <p className="text-gray-500">{item.name}</p>
+                              {/* Display macros if available */}
+                              {(item.protein || item.carbs || item.fat) && (
+                                <div className="flex gap-3 mt-2 text-sm text-gray-600">
+                                  <span>Protein {item.protein ? `${Math.round(item.protein)}g` : '—'}</span>
+                                  <span>Carbs {item.carbs ? `${Math.round(item.carbs)}g` : '—'}</span>
+                                  <span>Fat {item.fat ? `${Math.round(item.fat)}g` : '—'}</span>
+                                </div>
+                              )}
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 align-start justify-start w-full">
                               <a className="bg-blue-500 hover:bg-blue-400 rounded text-white hover:cursor-pointer w-full text-center select-none" onClick={() => subtractCalories(index, 10)}>
