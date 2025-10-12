@@ -1,18 +1,29 @@
+// ========================================
+//  SERVER: Calorie Counter Backend
+// ========================================
+
 import cors from 'cors'
 import axios from 'axios'
 import dotenv from 'dotenv'
 import express from 'express'
 import { createClient } from '@supabase/supabase-js'
 
-dotenv.config()
+dotenv.config() // Load .env variables
 
 const PORT = 5050
 const app = express()
 
-// Initialize Supabase with SERVICE ROLE KEY (only for backend!)
+// ========================================
+//  SUPABASE INITIALIZATION
+// ========================================
+// Use the SERVICE ROLE KEY only on the backend (NEVER in frontend)
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
-// CORS: Allow frontend
+// ========================================
+//  MIDDLEWARE
+// ========================================
+
+// Allow requests from local frontend
 app.use(
   cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
@@ -20,15 +31,16 @@ app.use(
   })
 )
 
+// Allow JSON request bodies
 app.use(express.json())
 
-// Health check
+// Health check (to test if server is running)
 app.get('/health', (_req, res) => {
   res.json({ status: 'OK' })
 })
 
 // ========================================
-// HELPER: Verify user from token
+//  HELPER: Verify user from Bearer token
 // ========================================
 async function getUserFromToken(authHeader) {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -36,7 +48,6 @@ async function getUserFromToken(authHeader) {
   }
 
   const token = authHeader.split(' ')[1]
-
   const { data, error } = await supabase.auth.getUser(token)
 
   if (error || !data.user) {
@@ -47,58 +58,43 @@ async function getUserFromToken(authHeader) {
 }
 
 // ========================================
-// HELPER: Check rate limit (3 per day)
+//  HELPER: Get or Reset Rate Limit Record
 // ========================================
-async function checkRateLimit(userId) {
+async function getRateLimitRecord(userId) {
   const today = new Date().toLocaleDateString('en-CA')
-  console.log(`🧠 Checking rate limit for ${userId} on ${today}`)
 
+  // Find existing record
   const { data: usage, error } = await supabase.from('api_usage').select('*').eq('user_id', userId).single()
 
-  if (error) console.log('⚠️ Fetch error:', error)
-  else console.log('📄 Current usage:', usage)
-
-  // No record — insert
+  // No record found → create one
   if (error || !usage) {
-    console.log('🆕 Creating first usage record...')
-    const { data: inserted, error: insertError } = await supabase.from('api_usage').insert({ user_id: userId, count: 1, last_reset: today }).select()
-    if (insertError) console.log('❌ Insert error:', insertError)
-    else console.log('✅ Inserted usage:', inserted)
-    return { allowed: true, count: 1, limit: 3 }
+    const { data: newUsage } = await supabase.from('api_usage').insert({ user_id: userId, count: 0, last_reset: today }).select().single()
+    return newUsage
   }
 
+  // New day → reset count
   const lastResetDate = usage.last_reset.split('T')[0]
-  const isNewDay = lastResetDate < today
-  if (isNewDay) {
-    console.log('🔁 Resetting count for new day')
-    await supabase.from('api_usage').update({ count: 1, last_reset: today }).eq('user_id', userId)
-    return { allowed: true, count: 1, limit: 3 }
+  if (lastResetDate < today) {
+    await supabase.from('api_usage').update({ count: 0, last_reset: today }).eq('user_id', userId)
+    return { ...usage, count: 0, last_reset: today }
   }
 
-  if (usage.count >= 3) {
-    console.log('🚫 Limit reached:', usage.count)
-    return { allowed: false, count: usage.count, limit: 3 }
-  }
-
-  const newCount = usage.count + 1
-  console.log('🔢 Incrementing count to:', newCount)
-  await supabase.from('api_usage').update({ count: newCount }).eq('user_id', userId)
-
-  return { allowed: true, count: newCount, limit: 3 }
+  // Return existing record
+  return usage
 }
 
 // ========================================
-// ENDPOINT: OpenAI with Auth + Rate Limit
+//  ENDPOINT: /api/gpt  (AI Estimate with Rate Limit)
 // ========================================
 app.post('/api/gpt', async (req, res) => {
   const { foodItem } = req.body
 
-  // 1. Validate input
+  // 1️⃣ Validate request body
   if (!foodItem) {
     return res.status(400).json({ error: 'foodItem is required' })
   }
 
-  // 2. Verify user authentication
+  // 2️⃣ Verify user authentication
   const authResult = await getUserFromToken(req.headers.authorization)
   if (authResult.error) {
     return res.status(401).json({ error: authResult.error })
@@ -107,28 +103,25 @@ app.post('/api/gpt', async (req, res) => {
   const userId = authResult.user.id
   console.log(`📥 Request from user: ${userId}`)
 
-  // 3. Check rate limit
-  const rateLimit = await checkRateLimit(userId)
+  // 3️⃣ Fetch user's rate limit record
+  const record = await getRateLimitRecord(userId)
+  const limit = 3 // daily limit (set higher for dev if needed)
 
-  if (!rateLimit.allowed) {
-    console.log(`⛔ User ${userId} hit limit (${rateLimit.count}/${rateLimit.limit})`)
+  if (record.count >= limit) {
+    console.log(`🚫 Limit reached: ${record.count}/${limit}`)
     return res.status(429).json({
       error: 'Daily limit reached',
-      message: `You've used all ${rateLimit.limit} AI estimates today. Try again tomorrow!`,
-      usage: {
-        count: rateLimit.count,
-        limit: rateLimit.limit
-      }
+      message: `You've used all ${limit} AI estimates today. Try again tomorrow!`,
+      usage: { count: record.count, limit }
     })
   }
 
-  console.log(`✅ Rate limit OK (${rateLimit.count}/${rateLimit.limit})`)
-
-  // 4. Call OpenAI
+  // 4️⃣ Check API key
   if (!process.env.OPENAI_API_KEY) {
     return res.status(500).json({ error: 'OpenAI API key not configured' })
   }
 
+  // 5️⃣ Call OpenAI API
   try {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -137,11 +130,11 @@ app.post('/api/gpt', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a nutrition expert. Return ONLY valid JSON array with macronutrients. Format: [{"food": "item name", "calories": number, "protein": number, "carbs": number, "fat": number}]. All nutrients in grams. Be realistic with estimates.'
+            content: 'You are a nutrition expert. Return ONLY valid JSON: [{"food": "name", "calories": number, "protein": number, "carbs": number, "fat": number}]. All nutrients in grams.'
           },
           {
             role: 'user',
-            content: `Estimate calories and macronutrients (protein, carbs, fat in grams) for: ${foodItem}`
+            content: `Estimate calories and macronutrients for: ${foodItem}`
           }
         ],
         temperature: 0.7
@@ -155,6 +148,12 @@ app.post('/api/gpt', async (req, res) => {
     )
 
     console.log('✅ OpenAI response received')
+
+    // 6️⃣ Only increment the rate limit if OpenAI succeeded
+    const newCount = record.count + 1
+    await supabase.from('api_usage').update({ count: newCount }).eq('user_id', userId)
+
+    console.log(`✅ Rate limit OK (${newCount}/${limit})`)
     res.json(response.data)
   } catch (err) {
     console.error('❌ OpenAI error:', err.response?.data || err.message)
@@ -167,11 +166,13 @@ app.post('/api/gpt', async (req, res) => {
   }
 })
 
-// Start server
+// ========================================
+//  START SERVER
+// ========================================
 app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log('✅ Calorie Counter Backend')
-  console.log(`🚀 http://localhost:${PORT}`)
+  console.log(`🚀 Running on: http://localhost:${PORT}`)
   console.log(`🔐 Supabase: ${process.env.SUPABASE_URL ? '✓' : '✗'}`)
   console.log(`🤖 OpenAI: ${process.env.OPENAI_API_KEY ? '✓' : '✗'}`)
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
