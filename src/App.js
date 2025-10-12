@@ -17,7 +17,7 @@ import MealPlanGenerator from './pages/MealPlanGenerator'
 
 // import components
 import Nav from './components/Nav'
-import { supabase } from './supabase'
+import { supabase } from './lib/supabase'
 
 // Set up axios configurations
 // axios.defaults.withCredentials = true
