@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 // Supabase client for talking to our database and auth
-import { supabase } from '../supabase'
+import { supabase } from '../lib/supabase'
 
 export default function Profile() {
   // We use navigate to redirect users if they are not logged in
@@ -39,17 +39,10 @@ export default function Profile() {
       setUserId(user.id)
 
       // 2) Ensure a profile row exists for this user, then fetch it
-      await supabase.from('profiles').upsert(
-        { id: user.id, email: user.email || '' },
-        { onConflict: 'id' }
-      )
+      await supabase.from('profiles').upsert({ id: user.id, email: user.email || '' }, { onConflict: 'id' })
 
       // 3) Get the profile fields we care about
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('avatar, name, email, calorieGoal')
-        .eq('id', user.id)
-        .single()
+      const { data, error } = await supabase.from('profiles').select('avatar, name, email, calorieGoal').eq('id', user.id).single()
 
       if (error) {
         console.error('Error fetching profile:', error.message)
@@ -110,10 +103,7 @@ export default function Profile() {
       }
 
       // Update the 'profiles' table for this user
-      const { error } = await supabase
-        .from('profiles')
-        .update(updatedProfile)
-        .eq('id', userId)
+      const { error } = await supabase.from('profiles').update(updatedProfile).eq('id', userId)
 
       if (error) {
         console.error('Error updating profile:', error.message)
@@ -143,11 +133,7 @@ export default function Profile() {
       <div className="max-w-3xl mx-auto py-10">
         {/* Page title */}
         <h1 className="text-3xl font-semibold mb-6">Personal info</h1>
-        {changesSaved && (
-          <div className="mb-4 text-green-700 bg-green-100 border border-green-200 rounded px-3 py-2">
-            Changes saved.
-          </div>
-        )}
+        {changesSaved && <div className="mb-4 text-green-700 bg-green-100 border border-green-200 rounded px-3 py-2">Changes saved.</div>}
         {/* The entire profile form. Each row is editable. */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
