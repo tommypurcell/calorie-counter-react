@@ -3,7 +3,7 @@ import axios from 'axios'
 import React from 'react'
 import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { supabase } from '../supabase'
+import { supabase } from '../lib/supabase'
 
 axios.defaults.withCredentials = true
 
@@ -18,18 +18,17 @@ export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('isLoggedIn'))
   const navigate = useNavigate()
 
-  
   const [profilePic, setProfilePic] = useState(localStorage.getItem('avatar'))
   const [displayName, setDisplayName] = useState(localStorage.getItem('name') || '')
-  
+
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  
+
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen)
   }
 
   // Compute an initial to show when the user has no avatar image set
-  const initial = (displayName && displayName.length > 0) ? displayName.charAt(0).toUpperCase() : 'U'
+  const initial = displayName && displayName.length > 0 ? displayName.charAt(0).toUpperCase() : 'U'
 
   const requestLogout = async (e) => {
     e.preventDefault()
@@ -99,13 +98,9 @@ export default function Nav() {
       // Otherwise fetch from Supabase profiles; fallback to email username
       try {
         const userId = data.user.id
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('name, avatar')
-          .eq('id', userId)
-          .single()
+        const { data: profile } = await supabase.from('profiles').select('name, avatar').eq('id', userId).single()
 
-        const fallback = (data.user?.user_metadata?.full_name) || (data.user?.email?.split('@')[0]) || 'User'
+        const fallback = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User'
         const nameToUse = profile?.name || fallback
         setDisplayName(nameToUse)
         localStorage.setItem('name', nameToUse)
@@ -115,7 +110,7 @@ export default function Nav() {
           localStorage.setItem('avatar', profile.avatar)
         }
       } catch (err) {
-        const fallback = (data.user?.user_metadata?.full_name) || (data.user?.email?.split('@')[0]) || 'User'
+        const fallback = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User'
         setDisplayName(fallback)
       }
     }
