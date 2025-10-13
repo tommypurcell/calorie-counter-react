@@ -10,7 +10,7 @@ import { createClient } from '@supabase/supabase-js'
 
 dotenv.config() // Load .env variables
 
-const PORT = 5050
+const PORT = process.env.PORT || 5050
 const app = express()
 
 // ========================================
@@ -23,10 +23,10 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 //  MIDDLEWARE
 // ========================================
 
-// Allow requests from local frontend
+// Allow requests from local frontend and vercel deployment
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: ['http://localhost:3000', 'https://calorie-counter-react.vercel.app'],
     credentials: true
   })
 )
@@ -105,7 +105,7 @@ app.post('/api/gpt', async (req, res) => {
 
   // 3️⃣ Fetch user's rate limit record
   const record = await getRateLimitRecord(userId)
-  const limit = 3 // daily limit (set higher for dev if needed)
+  const limit = 15 // daily limit (set higher for dev if needed)
 
   if (record.count >= limit) {
     console.log(`🚫 Limit reached: ${record.count}/${limit}`)
