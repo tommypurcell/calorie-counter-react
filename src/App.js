@@ -12,8 +12,8 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
 import LandingPage from './pages/LandingPage'
+import AuthCallback from './pages/AuthCallback'
 import CalorieCounter from './pages/CalorieCounter'
-import MealPlanGenerator from './pages/MealPlanGenerator'
 
 // import components
 import Nav from './components/Nav'
@@ -59,11 +59,13 @@ function App() {
 
       <Routes>
         <Route path="/stats" element={<Stats />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/gpt" element={<CalorieCounter />} />
         <Route path="/landing-page" element={<LandingPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
       </Routes>
     </BrowserRouter>
