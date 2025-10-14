@@ -3,6 +3,30 @@ import React, { useEffect, useState } from 'react'
 // Supabase client for talking to our database and auth
 import { supabase } from '../lib/supabase'
 
+export function EditableField({ label, field, type = 'number', editField, fieldValues, profile, handleChange, handleEditClick }) {
+  return (
+    <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+      <div>
+        <h2 className="text-lg font-medium">{label}</h2>
+        {editField === field ? <input type={type} name={field} value={fieldValues[field]} onChange={handleChange} className="form-control" /> : <p className="text-gray-500">{profile[field] || 'Not provided'}</p>}
+      </div>
+      <div className="flex flex-row gap-x-3">
+        <>
+          <button type="submit" className={`text-blue-500 hover:underline ${editField === field ? '' : 'hidden'}`}>
+            Save
+          </button>
+          <button type="button" onClick={() => handleEditClick(null)} className={`text-blue-500 hover:underline ${editField === field ? '' : 'hidden'}`}>
+            Close
+          </button>
+          <button type="button" onClick={() => handleEditClick(field)} className={`text-blue-500 hover:underline ${editField === field ? 'hidden' : ''}`}>
+            Edit
+          </button>
+        </>
+      </div>
+    </div>
+  )
+}
+
 export default function Profile() {
   // We use navigate to redirect users if they are not logged in
   const navigate = useNavigate()
@@ -20,9 +44,12 @@ export default function Profile() {
     avatar: '',
     name: '',
     email: '',
-    calorieGoal: ''
+    calorieGoal: '',
+    proteingoal: '',
+    carbgoal: '',
+    fatgoal: ''
   })
-
+  console.log('fieldvalues', fieldValues)
   useEffect(() => {
     // On first render, load the current user's profile from Supabase.
     // If there is no profile row yet, create one.
@@ -42,7 +69,7 @@ export default function Profile() {
       await supabase.from('profiles').upsert({ id: user.id, email: user.email || '' }, { onConflict: 'id' })
 
       // 3) Get the profile fields we care about
-      const { data, error } = await supabase.from('profiles').select('avatar, name, email, calorieGoal').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('avatar, name, email, calorieGoal, proteingoal, carbgoal, fatgoal').eq('id', user.id).single()
 
       if (error) {
         console.error('Error fetching profile:', error.message)
@@ -51,11 +78,16 @@ export default function Profile() {
 
       // 4) Put the data into component state and form controls
       setProfile(data)
+      console.log('profile->', profile)
+
       setFieldValues({
         avatar: data?.avatar || '',
         name: data?.name || '',
         email: data?.email || '',
-        calorieGoal: data?.calorieGoal ?? ''
+        calorieGoal: data?.calorieGoal ?? '',
+        proteingoal: data?.proteingoal ?? '',
+        carbgoal: data?.carbgoal ?? '',
+        fatgoal: data?.fatgoal ?? ''
       })
 
       // 5) Also sync a few values to localStorage so the navbar updates immediately
@@ -99,9 +131,12 @@ export default function Profile() {
         avatar: fieldValues.avatar,
         name: fieldValues.name,
         email: fieldValues.email,
-        calorieGoal: fieldValues.calorieGoal === '' ? null : Number(fieldValues.calorieGoal)
+        calorieGoal: fieldValues.calorieGoal === '' ? null : Number(fieldValues.calorieGoal),
+        proteingoal: fieldValues.proteingoal === '' ? null : Number(fieldValues.proteingoal),
+        carbgoal: fieldValues.carbgoal === '' ? null : Number(fieldValues.carbgoal),
+        fatgoal: fieldValues.fatgoal === '' ? null : Number(fieldValues.fatgoal)
       }
-
+      console.log('updated profile', updatedProfile)
       // Update the 'profiles' table for this user
       const { error } = await supabase.from('profiles').update(updatedProfile).eq('id', userId)
 
@@ -163,79 +198,18 @@ export default function Profile() {
                 </>
               </div>
             </div>
-
             {/* Name */}
-            <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-              <div>
-                <h2 className="text-lg font-medium">Name</h2>
-                {editField === 'name' ? (
-                  <input type="text" name="name" value={fieldValues.name} onChange={handleChange} className="form-control" />
-                ) : profile.name ? (
-                  <div>{editField === 'name' ? <input type="text" name="name" value={fieldValues.name} onChange={handleChange} className="form-control" /> : <p className="text-gray-500">{profile.name || 'Not provided'}</p>}</div>
-                ) : (
-                  <div className="h-16 w-16 rounded-full border border-gray-300 bg-gray-100 flex items-center justify-center text-gray-500">No Image</div>
-                )}
-              </div>
-              <div className="flex flex-row gap-x-3">
-                <>
-                  <button type="submit" className={`text-blue-500 hover:underline ${editField === 'name' ? '' : 'hidden'}`}>
-                    Save
-                  </button>
-                  <button type="button" onClick={() => handleEditClick(null)} className={`text-blue-500 hover:underline ${editField === 'name' ? '' : 'hidden'}`}>
-                    Close
-                  </button>
-                  <button type="button" onClick={() => handleEditClick('name')} className={`text-blue-500 hover:underline ${editField === 'name' ? 'hidden' : ''}`}>
-                    Edit
-                  </button>
-                </>
-              </div>
-            </div>
+            <EditableField label="Name" field="name" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
             {/* Email */}
-            <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-              <div>
-                <h2 className="text-lg font-medium">Email Address</h2>
-                {editField === 'email' ? (
-                  <input type="text" name="email" value={fieldValues.email} onChange={handleChange} className="form-control" />
-                ) : profile.email ? (
-                  <div>{editField === 'email' ? <input type="text" name="email" value={fieldValues.email} onChange={handleChange} className="form-control" /> : <p className="text-gray-500">{profile.email || 'Not provided'}</p>}</div>
-                ) : (
-                  <div className="h-16 w-16 rounded-full border border-gray-300 bg-gray-100 flex items-center justify-center text-gray-500">No Image</div>
-                )}
-              </div>
-              <div className="flex flex-row gap-x-3">
-                <>
-                  <button type="submit" className={`text-blue-500 hover:underline ${editField === 'email' ? '' : 'hidden'}`}>
-                    Save
-                  </button>
-                  <button type="button" onClick={() => handleEditClick(null)} className={`text-blue-500 hover:underline ${editField === 'email' ? '' : 'hidden'}`}>
-                    Close
-                  </button>
-                  <button type="button" onClick={() => handleEditClick('email')} className={`text-blue-500 hover:underline ${editField === 'email' ? 'hidden' : ''}`}>
-                    Edit
-                  </button>
-                </>
-              </div>
-            </div>
+            <EditableField label="Email" field="email" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
             {/* Calorie Goal */}
-            <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-              <div>
-                <h2 className="text-lg font-medium">Calorie Goal</h2>
-                {editField === 'calorieGoal' ? <input type="number" name="calorieGoal" value={fieldValues.calorieGoal} onChange={handleChange} className="form-control" /> : <p className="text-gray-500">{profile.calorieGoal || 'Not provided'}</p>}
-              </div>
-              <div className="flex flex-row gap-x-3">
-                <>
-                  <button type="submit" className={`text-blue-500 hover:underline ${editField === 'calorieGoal' ? '' : 'hidden'}`}>
-                    Save
-                  </button>
-                  <button type="button" onClick={() => handleEditClick(null)} className={`text-blue-500 hover:underline ${editField === 'calorieGoal' ? '' : 'hidden'}`}>
-                    Close
-                  </button>
-                  <button type="button" onClick={() => handleEditClick('calorieGoal')} className={`text-blue-500 hover:underline ${editField === 'calorieGoal' ? 'hidden' : ''}`}>
-                    Edit
-                  </button>
-                </>
-              </div>
-            </div>
+            <EditableField label="Calorie Goal" field="calorieGoal" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
+            {/* Protein Goal */}
+            <EditableField label="Protein Goal" field="proteingoal" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
+            {/* Carbohydrate Goal */}
+            <EditableField label="Carbohydrate Goal" field="carbgoal" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
+            {/* Fat Goal */}
+            <EditableField label="Fat Goal" field="fatgoal" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
           </div>
         </form>
       </div>
