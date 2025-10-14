@@ -77,7 +77,8 @@ export default function Login() {
 
   return (
     <div className="h-screen overflow-hidden">
-      <div className="grid grid-cols-2 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+        {/* 1st column */}
         <div
           style={{
             backgroundColor: `#DAFFFD`,
@@ -86,8 +87,9 @@ export default function Login() {
             // eslint-disable-next-line max-len
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpolygon fill='%23AE9' points='120 120 60 120 90 90 120 60 120 0 120 0 60 60 0 0 0 60 30 90 60 120 120 120 '/%3E%3C/svg%3E")`
           }}
-          className="h-full hidden sm:block"
+          className="h-full hidden md:block"
         ></div>
+        {/* 2nd column */}
         <div className="flex justify-center items-center h-full">
           <form onSubmit={(e) => requestLogin(e)} className="bg-white grid grid-cols-1 gap-y-1 justify-items-center w-3/4 p-8 rounded-lg shadow-lg">
             {/* wrapper for all form contents (sets width) */}
