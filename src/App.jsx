@@ -1,11 +1,9 @@
-// imports
+// src/App.jsx
 import './App.css'
-import React from 'react'
-import axios from 'axios'
-import { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 
-// import pages
+// pages
 import Home from './pages/Home'
 import Stats from './pages/Stats'
 import Login from './pages/Login'
@@ -15,47 +13,38 @@ import LandingPage from './pages/LandingPage'
 import AuthCallback from './pages/AuthCallback'
 import CalorieCounter from './pages/CalorieCounter'
 
-// import components
+// components
 import Nav from './components/Nav'
 import { supabase } from './lib/supabase'
+import { render } from '@testing-library/react'
 
-// Set up axios configurations
-// axios.defaults.withCredentials = true
-
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-const local_url = process.env.REACT_APP_LOCAL_URL
-
-function App() {
-  // State for managing logged-in status
+function AppContent() {
+  const location = useLocation()
   const [loggedIn, setLoggedIn] = useState(false)
   const [profilePic, setProfilePic] = useState('')
   const [calorieGoal, setCalorieGoal] = useState(0)
 
-  // Function to check if user is logged in
-  const checkLogin = async () => {
-    const { data } = await supabase.auth.getUser()
-    const user = data?.user
-    if (user) {
-      localStorage.setItem('isLoggedIn', 'true')
-    } else {
-      localStorage.removeItem('isLoggedIn')
-    }
-  }
-
-  // Set state of logged in to display nav button as loggedin or loggedout
-
-  // Effect hook to check login status on mount
   useEffect(() => {
+    const checkLogin = async () => {
+      const { data } = await supabase.auth.getUser()
+      const user = data?.user
+      if (user) localStorage.setItem('isLoggedIn', 'true')
+      else localStorage.removeItem('isLoggedIn')
+    }
     checkLogin()
+
+    let renderAPI = process.env.REACT_APP_API_BASE
+
+    // wake up backend
+    fetch(`${renderAPI}/health`).catch(() => {})
   }, [])
 
-  return (
-    // Router
-    <BrowserRouter>
-      {/* Pass loggedIn state and handleLogout function as props to Nav */}
+  // condition updates automatically on route change
+  const hideNav = location.pathname === '/login' || location.pathname === '/signup'
 
-      {/* Conditionally render Nav if not on login or signup pages */}
-      {location.pathname !== '/login' && location.pathname !== '/signup' ? <Nav profilePic={profilePic} /> : null}
+  return (
+    <>
+      {!hideNav && <Nav profilePic={profilePic} />}
 
       <Routes>
         <Route path="/stats" element={<Stats />} />
@@ -68,8 +57,14 @@ function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
       </Routes>
-    </BrowserRouter>
+    </>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  )
+}
