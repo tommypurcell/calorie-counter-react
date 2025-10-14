@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
@@ -68,6 +68,12 @@ export default function Login() {
       setErrorMsg('An error occurred. Please try again later.')
     }
   }
+
+  useEffect(() => {
+    let renderAPI = process.env.REACT_APP_API_BASE
+    // wake up backend
+    fetch(`${renderAPI}/health`).catch(() => {})
+  }, [])
 
   return (
     <div className="h-screen overflow-hidden">
