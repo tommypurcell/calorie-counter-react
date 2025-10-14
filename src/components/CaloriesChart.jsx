@@ -40,19 +40,6 @@ export default function CaloriesChart({ data, calorieGoal }) {
             labelFormatter={(label) => `Date: ${label}`}
           />
 
-          {/* Optional dashed goal line */}
-          <ReferenceLine
-            y={calorieGoal}
-            stroke="#94a3b8"
-            strokeDasharray="4 4"
-            label={{
-              value: 'Goal',
-              position: 'top',
-              fill: '#6b7280',
-              fontSize: 10
-            }}
-          />
-
           <Bar dataKey="calories" radius={[4, 4, 0, 0]}>
             {chartData.map((entry, i) => (
               <Cell
@@ -61,6 +48,18 @@ export default function CaloriesChart({ data, calorieGoal }) {
               />
             ))}
           </Bar>
+          {/* Optional dashed goal line */}
+          <ReferenceLine
+            y={calorieGoal}
+            stroke="rgb(156 163 175)"
+            strokeDasharray="4 4"
+            label={{
+              value: 'Goal',
+              position: 'insideBottomRight',
+              fill: 'rgb(75 85 99)',
+              fontSize: 12
+            }}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
