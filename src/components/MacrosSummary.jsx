@@ -3,16 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { BaseProgressBar, CarbProgressBar, ProteinProgressBar, FatProgressBar } from '../components/GoalProgress'
 
-function MiniCard({ label, value, goal }) {
-  return (
-    <div className="rounded-xl border bg-white p-3 text-center shadow-sm">
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className="text-lg font-semibold">{value}g</div>
-      <CarbProgressBar total={100} goal={150} />
-    </div>
-  )
-}
-
 // ────────────────────────────────
 // Individual Mini Cards
 // ────────────────────────────────
@@ -25,7 +15,6 @@ function ProteinCard({ value, goal }) {
     </div>
   )
 }
-
 function CarbCard({ value, goal }) {
   return (
     <div className="rounded-xl border bg-white p-3 text-center shadow-sm">
@@ -35,7 +24,6 @@ function CarbCard({ value, goal }) {
     </div>
   )
 }
-
 function FatCard({ value, goal }) {
   return (
     <div className="rounded-xl border bg-white p-3 text-center shadow-sm">
@@ -46,71 +34,89 @@ function FatCard({ value, goal }) {
   )
 }
 
-// UTC 'YYYY-MM-DD' so we don't get off-by-one issues
-const isoUTC = () => {
-  const now = new Date()
-  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-  return d.toISOString().slice(0, 10)
-}
-
 export default function MacrosSummary() {
+  const [err, setErr] = useState('')
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0 })
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
+  const [macroGoals, setMacroGoals] = useState({ proteinGoal: 120, carbGoal: 120, fatGoal: 120 })
 
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        setLoading(true)
-        setErr('')
+    let mounted = true // helps prevent updating state after component unmounts
 
-        // 1️⃣ Get user
+    async function loadMacros() {
+      setLoading(true)
+      setErr('')
+
+      try {
+        // STEP 1: Get the current logged-in user
         const { data: auth } = await supabase.auth.getUser()
         const user = auth?.user
+
+        // If no user is logged in, stop here
         if (!user) {
           if (mounted) setLoading(false)
           return
         }
 
-        // 2️⃣ Get today's date (local)
+        // STEP 2: Make today’s date (like 2025-10-13)
         const date = new Date()
         const today = `${date.getFullYear()}-${String(date.getMonth() + 1)}-${String(date.getDate())}`
 
-        // 3️⃣ Fetch today's foods
-        const { data, error } = await supabase.from('foods').select('protein, carbs, fat').eq('user_id', user.id).eq('eaten_at', today)
+        // STEP 3: Get all food entries for today
+        const { data: foods, error: foodsError } = await supabase.from('foods').select('protein, carbs, fat').eq('user_id', user.id).eq('eaten_at', today)
 
-        if (error) throw error
+        // STEP 4: Get the user’s goal numbers from the profiles table
+        const { data: goals, error: goalsError } = await supabase.from('profiles').select('proteingoal, carbgoal, fatgoal').eq('id', user.id).single()
 
-        // 4️⃣ Sum up macros
-        if (data && data.length > 0) {
-          let sumProtein = 0
-          let sumCarbs = 0
-          let sumFat = 0
+        // Check if either request failed
+        if (foodsError) throw foodsError
+        if (goalsError) throw goalsError
 
-          data.forEach((food) => {
-            sumProtein += Number(food.protein) || 0
-            sumCarbs += Number(food.carbs) || 0
-            sumFat += Number(food.fat) || 0
+        // STEP 5: Save the goal numbers to state
+        if (mounted && goals) {
+          setMacroGoals({
+            proteinGoal: goals.proteingoal,
+            carbGoal: goals.carbgoal,
+            fatGoal: goals.fatgoal
+          })
+        }
+
+        // STEP 6: Add up all the protein, carbs, and fat from today's foods
+        if (foods && foods.length > 0) {
+          let totalProtein = 0
+          let totalCarbs = 0
+          let totalFat = 0
+
+          foods.forEach((food) => {
+            totalProtein += Number(food.protein) || 0
+            totalCarbs += Number(food.carbs) || 0
+            totalFat += Number(food.fat) || 0
           })
 
+          // STEP 7: Save the totals
           if (mounted) {
             setMacros({
-              protein: Math.round(sumProtein),
-              carbs: Math.round(sumCarbs),
-              fat: Math.round(sumFat)
+              protein: Math.round(totalProtein),
+              carbs: Math.round(totalCarbs),
+              fat: Math.round(totalFat)
             })
           }
         } else {
-          console.log('No macro data found for today.')
+          console.log('No food data found for today.')
         }
-      } catch (e) {
-        console.error(e)
-        setErr('Failed to load data.')
+      } catch (err) {
+        console.error('Error loading data:', err)
+        setErr('Something went wrong while loading your data.')
       } finally {
+        // STEP 8: Always stop the loading spinner
         if (mounted) setLoading(false)
       }
-    })()
+    }
+
+    // Run the function
+    loadMacros()
+
+    // Cleanup when leaving the page
     return () => {
       mounted = false
     }
@@ -122,9 +128,9 @@ export default function MacrosSummary() {
         <div className="col-span-3 text-center text-sm text-red-600">{err}</div>
       ) : (
         <>
-          <ProteinCard value={loading ? 0 : macros.protein} goal={150} />
-          <CarbCard value={loading ? 0 : macros.carbs} goal={150} />
-          <FatCard value={loading ? 0 : macros.fat} goal={150} />
+          <ProteinCard value={loading ? 0 : macros.protein} goal={macroGoals.proteinGoal} />
+          <CarbCard value={loading ? 0 : macros.carbs} goal={macroGoals.carbGoal} />
+          <FatCard value={loading ? 0 : macros.fat} goal={macroGoals.fatGoal} />
         </>
       )}
     </div>
