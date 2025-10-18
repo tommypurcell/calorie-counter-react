@@ -125,7 +125,7 @@ export default function CalorieCounter(props) {
   const removeFoodItem = (indexToRemove) => {
     // Filter out the item at the specified index
     const newFoodLog = foodLog.filter((item, index) => index !== indexToRemove)
-    console.log('new Food log', newFoodLog)
+
     setFoodLog(newFoodLog)
 
     // Subtract the calories of the removed item from the total

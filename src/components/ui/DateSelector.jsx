@@ -27,7 +27,7 @@ export default function DateSelector({ value, onChange }) {
         </select>
       </div>
       <div className="h-full">
-        <input className="border text-sm rounded h-8" type="date" value={selected} max={today} onChange={(e) => onChange?.(e.target.value)} />
+        <input className="border text-sm rounded h-8" type="date" value={selected} max={today} required onChange={(e) => onChange?.(e.target.value)} />
       </div>
     </div>
   )

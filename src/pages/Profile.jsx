@@ -49,7 +49,7 @@ export default function Profile() {
     carbgoal: '',
     fatgoal: ''
   })
-  console.log('fieldvalues', fieldValues)
+
   useEffect(() => {
     // On first render, load the current user's profile from Supabase.
     // If there is no profile row yet, create one.
@@ -78,7 +78,6 @@ export default function Profile() {
 
       // 4) Put the data into component state and form controls
       setProfile(data)
-      console.log('profile->', profile)
 
       setFieldValues({
         avatar: data?.avatar || '',
@@ -136,7 +135,7 @@ export default function Profile() {
         carbgoal: fieldValues.carbgoal === '' ? null : Number(fieldValues.carbgoal),
         fatgoal: fieldValues.fatgoal === '' ? null : Number(fieldValues.fatgoal)
       }
-      console.log('updated profile', updatedProfile)
+
       // Update the 'profiles' table for this user
       const { error } = await supabase.from('profiles').update(updatedProfile).eq('id', userId)
 

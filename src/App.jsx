@@ -17,6 +17,7 @@ import CalorieCounter from './pages/CalorieCounter'
 import Nav from './components/Nav'
 import { supabase } from './lib/supabase'
 import { render } from '@testing-library/react'
+import ExerciseLog from './pages/ExerciseLog'
 
 function AppContent() {
   const location = useLocation()
@@ -53,6 +54,7 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/gpt" element={<CalorieCounter />} />
+        <Route path="/exercise-log" element={<ExerciseLog />} />
         <Route path="/landing-page" element={<LandingPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Home calorieGoal={calorieGoal} />} />

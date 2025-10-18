@@ -1,17 +1,12 @@
 /* eslint-disable react/prop-types */
 import axios from 'axios'
 import React from 'react'
+
+import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 
 axios.defaults.withCredentials = true
-
-const local_url = process.env.REACT_APP_LOCAL_URL
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-
-console.log('Local URL:', local_url)
-console.log('Render URL:', render_url) // This should print the URL
 
 export default function Nav() {
   // Track login state so Nav re-renders immediately on auth changes
@@ -128,6 +123,9 @@ export default function Nav() {
           </NavLink>
           <NavLink to="/stats" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
             Stats
+          </NavLink>
+          <NavLink to="/exercise-log" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
+            Exercise Log
           </NavLink>
         </div>
 

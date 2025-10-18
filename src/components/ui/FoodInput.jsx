@@ -166,7 +166,7 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
     <div className="max-w-xl mx-auto p-4 border rounded space-y-4">
       <h1 className="text-2xl font-bold">Add Food</h1>
 
-      <InputBox value={foodText} onChange={setFoodText} onEnter={addViaAPI} />
+      <InputBox value={foodText} onChange={setFoodText} onEnter={addViaAPI} placeholder="Enter food item here" />
 
       <div className="flex gap-2">
         <button className="bg-black text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAPI} disabled={loading}>

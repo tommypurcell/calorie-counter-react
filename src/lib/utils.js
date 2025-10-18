@@ -36,3 +36,25 @@ export function groupFoodsByDate(rows) {
   })
   return Object.values(grouped).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
+
+export function getToday() {
+  let myDate = new Date()
+
+  const year = myDate.getFullYear()
+  const month = String(myDate.getMonth() + 1).padStart(2, '0')
+  const day = String(myDate.getDate()).padStart(2, '0')
+  const hours = String(myDate.getHours()).padStart(2, '0')
+  const minutes = String(myDate.getMinutes()).padStart(2, '0')
+  const seconds = String(myDate.getSeconds()).padStart(2, '0')
+
+  return {
+    year,
+    month,
+    day,
+    hours,
+    minutes,
+    seconds,
+    formatted: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
+    shortDate: `${year}-${month}-${day}`
+  }
+}
