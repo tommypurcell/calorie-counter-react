@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from 'recharts'
+import { getHistoryTotals } from '../lib/statsUtils'
 
-export default function CaloriesChart({ data, calorieGoal }) {
-  if (!data?.length) return <p className="text-gray-500 text-center">No data available.</p>
+export default function CaloriesChart({ data }) {
+  const [totals, setTotals] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [calorieGoal, setCalorieGoal] = useState(2000)
 
   // Format short labels like "Oct 13"
   const shortDate = (d) => {
@@ -17,9 +20,45 @@ export default function CaloriesChart({ data, calorieGoal }) {
     dateFormatted: shortDate(d.date)
   }))
 
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true)
+
+      try {
+        const { user, history, calorieGoal } = await getHistoryTotals()
+        if (!user) {
+          setTotals(null)
+          setLoading(false)
+          setCalorieGoal(calorieGoal)
+          return
+        }
+
+        let net = history.reduce((sum, h) => sum + (h.net || 0), 0)
+        console.log(net)
+        console.log('user', user)
+        console.log('totals', totals)
+        console.log(calorieGoal)
+
+        // Update state
+        setTotals(history)
+
+        // Log for debug
+        console.log('✅ Today totals loaded:', totals)
+      } catch (err) {
+        console.error('Error fetching totals:', err)
+        setTotals(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
   return (
     <div className="w-full max-w-xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4">
-      <h3 className="text-sm font-semibold text-gray-600 mb-3 text-center">Calories per Day</h3>
+      <h3 className="text-sm font-semibold text-gray-600 mb-3 text-center">Net Calories per Day</h3>
+
       <ResponsiveContainer width="100%" height={250}>
         <BarChart
           data={chartData}
@@ -40,11 +79,11 @@ export default function CaloriesChart({ data, calorieGoal }) {
             labelFormatter={(label) => `Date: ${label}`}
           />
 
-          <Bar dataKey="calories" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="net" radius={[4, 4, 0, 0]}>
             {chartData.map((entry, i) => (
               <Cell
                 key={`cell-${i}`}
-                fill={entry.calories > calorieGoal ? '#ef4444' : '#22c55e'} // red-500 / green-500
+                fill={entry.net > calorieGoal ? '#ef4444' : '#22c55e'} // red-500 / green-500
               />
             ))}
           </Bar>

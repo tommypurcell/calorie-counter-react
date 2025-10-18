@@ -8,6 +8,8 @@ import DailyCalories from '../components/DailyCalories'
 import GoalProgress from '../components/GoalProgress'
 import MacrosSummary from '../components/MacrosSummary'
 import CaloriesChart from '../components/CaloriesChart'
+import ExerciseSummary from '../components/ExerciseSummary'
+import { getHistoryTotals } from '../lib/statsUtils'
 
 export default function Stats() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -16,13 +18,14 @@ export default function Stats() {
 
   useEffect(() => {
     const init = async () => {
-      const { user, foodsDaily, calorieGoal } = await loadUserData()
+      const { user, history } = await getHistoryTotals()
       if (!user) return setIsLoggedIn(false)
 
+      setData(history)
       setIsLoggedIn(true)
-      setCalorieGoal(calorieGoal)
-      setData(foodsDaily || []) // defensive default
       console.log('data', data)
+      setCalorieGoal(calorieGoal)
+      console.log(calorieGoal)
     }
     init()
   }, [])
@@ -39,9 +42,10 @@ export default function Stats() {
       <div className="flex flex-col items-center mt-6">
         <Greeting />
         <DailyCalories />
+        <ExerciseSummary />
         <GoalProgress />
         <MacrosSummary />
-        <CaloriesChart data={data} calorieGoal={calorieGoal} />
+        <CaloriesChart data={data} />
         {calorieGoal && <p className="text-sm text-gray-500 mb-2">Daily Goal: {calorieGoal} kcal</p>}
       </div>
     </>

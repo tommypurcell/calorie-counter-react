@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import axios from 'axios'
 import React from 'react'
+
+import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 
 axios.defaults.withCredentials = true
 
@@ -128,6 +129,9 @@ export default function Nav() {
           </NavLink>
           <NavLink to="/stats" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
             Stats
+          </NavLink>
+          <NavLink to="/exercise-log" className={({ isActive }) => `font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
+            Exercise Log
           </NavLink>
         </div>
 

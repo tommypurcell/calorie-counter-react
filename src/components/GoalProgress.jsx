@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { TestTubeDiagonalIcon } from 'lucide-react'
+import { getTodayTotals } from '../lib/statsUtils'
 
 // ────────────────────────────────
 // Base component for any macro (exported)
@@ -30,85 +31,72 @@ export function BaseProgressBar({ label, total, goal, color = 'bg-green-500', he
 // ────────────────────────────────
 // Individual exported macros
 // ────────────────────────────────
-export const CalorieProgressBar = ({ total, goal }) => <BaseProgressBar label="Calories" total={total} goal={goal} height="h-3" />
-
-export const ProteinProgressBar = ({ total, goal }) => <BaseProgressBar label="Protein (g)" total={total} goal={goal} />
-
-export const CarbProgressBar = ({ total, goal }) => <BaseProgressBar label="Carbs (g)" total={total} goal={goal} />
-
 export const FatProgressBar = ({ total, goal }) => <BaseProgressBar label="Fat (g)" total={total} goal={goal} />
+export const CarbProgressBar = ({ total, goal }) => <BaseProgressBar label="Carbs (g)" total={total} goal={goal} />
+export const ProteinProgressBar = ({ total, goal }) => <BaseProgressBar label="Protein (g)" total={total} goal={goal} />
+export const CalorieProgressBar = ({ total, goal }) => <BaseProgressBar label="Calories" total={total} goal={goal} height="h-3" />
 
 // ────────────────────────────────
 // Main GoalProgress component (default export)
 // ────────────────────────────────
 export default function GoalProgress() {
+  const [err, setErr] = useState('')
   const [goal, setGoal] = useState(null)
   const [todayFat, setTodayFat] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [todayCals, setTodayCals] = useState(0)
   const [todayCarbs, setTodayCarbs] = useState(0)
+  const [todayEaten, setTodayEaten] = useState(0)
+  const [todayBurned, setTodayBurned] = useState(0)
+
   const [todayProtein, setTodayProtein] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
 
   const macroGoals = { protein: 150, carbs: 200, fat: 60 }
 
   useEffect(() => {
     let mounted = true
-    ;(async () => {
+
+    async function loadData() {
       try {
         setLoading(true)
         setErr('')
 
-        const { data: auth } = await supabase.auth.getUser()
-        const user = auth?.user
+        // Step 1: Get today's totals (foods + exercises)
+        const { user, totals } = await getTodayTotals()
+
+        // Stop if user is not logged in
         if (!user) {
           if (mounted) setLoading(false)
           return
         }
 
-        // 1️⃣ Fetch goal from profiles
+        // Step 2: Get the user's calorie goal
         const { data: profile } = await supabase.from('profiles').select('calorieGoal').eq('id', user.id).single()
-        const g = profile?.calorieGoal ?? null
-        if (mounted) setGoal(g)
 
-        // 2️⃣ Get today's date (local)
-        const date = new Date()
-        const today = `${date.getFullYear()}-${String(date.getMonth() + 1)}-${String(date.getDate())}`
+        // Step 3: Update all numbers on screen
+        if (mounted) {
+          setGoal(profile?.calorieGoal ?? 2000) // default to 2000 if not set
+          setTodayCals(totals.net) // eaten minus burned
 
-        // 3️⃣ Fetch foods for today
-        const { data, error } = await supabase.from('foods').select('calories, protein, carbs, fat').eq('user_id', user.id).eq('eaten_at', today)
+          setTodayEaten(totals.eaten)
+          setTodayBurned(totals.burned)
 
-        if (error) throw error
-
-        // 4️⃣ Aggregate totals
-        if (data && data.length > 0) {
-          let sumCal = 0
-          let sumProtein = 0
-          let sumCarbs = 0
-          let sumFat = 0
-
-          data.forEach((food) => {
-            sumCal += Number(food.calories) || 0
-            sumProtein += Number(food.protein) || 0
-            sumCarbs += Number(food.carbs) || 0
-            sumFat += Number(food.fat) || 0
-          })
-
-          console.log('Total calories today:', sumCal)
-          setTodayCals(sumCal)
-          setTodayProtein(sumProtein)
-          setTodayCarbs(sumCarbs)
-          setTodayFat(sumFat)
-        } else {
-          console.log('No food entries found for today.')
+          setTodayProtein(totals.protein)
+          setTodayCarbs(totals.carbs)
+          setTodayFat(totals.fat)
         }
-      } catch (e) {
-        console.error(e)
+      } catch (error) {
+        console.error('Error loading data:', error)
         setErr('Failed to load data.')
       } finally {
         if (mounted) setLoading(false)
       }
-    })()
+    }
+
+    // Run the function
+    loadData()
+
+    // Cleanup if the component unmounts
     return () => {
       mounted = false
     }
@@ -127,9 +115,13 @@ export default function GoalProgress() {
       </div>
 
       {/* Progress bars */}
-      <div className="mt-3 grid grid-cols-1 gap-3">
-        <BaseProgressBar label="Calories" total={todayCals} goal={goal || 2000} height="h-2" color={todayCals < goal ? 'bg-green-500' : 'bg-red-500'} />
+      <div className="mt-3 grid grid-cols-1 gap-1">
+        <BaseProgressBar label="Eaten 🍱" total={todayEaten} goal={goal || 2000} height="h-2" color="bg-blue-500" />
+        <BaseProgressBar label="Burned 🔥" total={todayBurned} goal={goal || 2000} height="h-2" color="bg-orange-500" />
+        <BaseProgressBar label="Net ⚖️" total={todayCals} goal={goal || 2000} height="h-2" color={todayCals < goal ? 'bg-green-500' : 'bg-red-500'} />
       </div>
+
+      {goal && <div className="mt-2 text-xs text-gray-600">Remaining: {Math.max(goal - todayCals, 0)} kcal</div>}
 
       {/* Helper text */}
       {!loading && goal && <div className="mt-3 text-xs text-gray-500">{todayCals <= goal ? 'Nice! Under goal today.' : `Over goal today by ${todayCals - goal} calories`}</div>}

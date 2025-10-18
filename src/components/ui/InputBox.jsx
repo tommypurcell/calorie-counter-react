@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 
 // Controlled input with optional "press Enter to submit"
-export default function InputBox({ value, onChange, onEnter, placeholder = 'Enter food item here' }) {
+export default function InputBox({ name, value, onChange, onEnter, placeholder }) {
   const [text, setText] = useState(value || '')
   useEffect(() => {
     setText(value || '')
@@ -10,6 +10,7 @@ export default function InputBox({ value, onChange, onEnter, placeholder = 'Ente
 
   return (
     <input
+      name={name}
       className="w-full border rounded px-3 py-2"
       type="text"
       value={text}
