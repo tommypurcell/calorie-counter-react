@@ -82,7 +82,6 @@ export default function FoodItem({ food, day, dayIndex, foodIndex, editingId, se
 
     // 9. Tell React we have a new version to show
     setFoodLog(newLog)
-    console.log(foodLog)
   }
 
   const saveCalories = async () => {
@@ -107,7 +106,6 @@ export default function FoodItem({ food, day, dayIndex, foodIndex, editingId, se
     // 7. Put day back into the food log
     newLog[dayIndex] = day
 
-    console.log(updatedFood)
     // 9. Save to the database
     try {
       await updateFood(updatedFood.id, updatedFood)

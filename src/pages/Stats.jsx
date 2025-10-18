@@ -23,9 +23,7 @@ export default function Stats() {
 
       setData(history)
       setIsLoggedIn(true)
-      console.log('data', data)
       setCalorieGoal(calorieGoal)
-      console.log(calorieGoal)
     }
     init()
   }, [])

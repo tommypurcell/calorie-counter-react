@@ -31,7 +31,7 @@ export default function ExerciseLog() {
       console.error('No user found. Please log in first.')
       return
     }
-    console.log(dateStr)
+
     // Add the new exercise to the Supabase "exercises" table
     const { data, error } = await supabase
       .from('exercises')
@@ -160,7 +160,6 @@ export default function ExerciseLog() {
 
       if (error) console.error('Error fetching data:', error)
       else setWorkouts(data || [])
-      console.log(workouts)
     }
 
     fetchData()

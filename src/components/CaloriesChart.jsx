@@ -33,17 +33,8 @@ export default function CaloriesChart({ data }) {
           return
         }
 
-        let net = history.reduce((sum, h) => sum + (h.net || 0), 0)
-        console.log(net)
-        console.log('user', user)
-        console.log('totals', totals)
-        console.log(calorieGoal)
-
         // Update state
         setTotals(history)
-
-        // Log for debug
-        console.log('✅ Today totals loaded:', totals)
       } catch (err) {
         console.error('Error fetching totals:', err)
         setTotals(null)

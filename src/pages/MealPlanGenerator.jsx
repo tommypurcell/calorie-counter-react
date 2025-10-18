@@ -14,7 +14,6 @@ export default function MealPlanGenerator() {
 
     const data = await response.json()
     setMealData(data)
-    console.log(data)
   }
 
   function handleChange(e) {

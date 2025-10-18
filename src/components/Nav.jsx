@@ -8,12 +8,6 @@ import { NavLink, useNavigate } from 'react-router-dom'
 
 axios.defaults.withCredentials = true
 
-const local_url = process.env.REACT_APP_LOCAL_URL
-const render_url = process.env.REACT_APP_RENDER_USA_URL
-
-console.log('Local URL:', local_url)
-console.log('Render URL:', render_url) // This should print the URL
-
 export default function Nav() {
   // Track login state so Nav re-renders immediately on auth changes
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('isLoggedIn'))
