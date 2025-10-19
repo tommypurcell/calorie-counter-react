@@ -5,10 +5,12 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { checkProfileAndRedirect } from '../lib/userUtils'
 
 export default function Login() {
   const navigate = useNavigate()
   const [errorMsg, setErrorMsg] = useState('')
+  const [profile, setProfile] = useState({})
 
   const handleGoogleLogin = async () => {
     console.log('[OAuth] Starting Google sign-in...')
@@ -49,13 +51,21 @@ export default function Login() {
           data: { user }
         } = await supabase.auth.getUser()
         if (user) {
-          const { data: profile } = await supabase.from('profiles').select('name, avatar, calorieGoal').eq('id', user.id).single()
+          const { data: profile } = await supabase.from('profiles').select('name, avatar, calorieGoal, bmi, bmr').eq('id', user.id).single()
           if (profile) {
             if (profile.name) localStorage.setItem('name', profile.name)
             if (profile.avatar) localStorage.setItem('avatar', profile.avatar)
             if (profile.calorieGoal !== undefined && profile.calorieGoal !== null) {
               localStorage.setItem('calorieGoal', String(profile.calorieGoal))
             }
+          }
+          setProfile(profile)
+
+          checkProfileAndRedirect(navigate)
+          // 🚀 NEW: check for BMI or BMR
+          if (!profile || !profile.bmi || !profile.bmr) {
+            navigate('/on-boarding')
+            return
           }
         }
       } catch (_) {
