@@ -9,6 +9,7 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
+import Onboarding from './pages/OnBoarding'
 import LandingPage from './pages/LandingPage'
 import AuthCallback from './pages/AuthCallback'
 import CalorieCounter from './pages/CalorieCounter'
@@ -16,8 +17,8 @@ import CalorieCounter from './pages/CalorieCounter'
 // components
 import Nav from './components/Nav'
 import { supabase } from './lib/supabase'
-import { render } from '@testing-library/react'
 import ExerciseLog from './pages/ExerciseLog'
+import { render } from '@testing-library/react'
 
 function AppContent() {
   const location = useLocation()
@@ -49,13 +50,13 @@ function AppContent() {
 
       <Routes>
         <Route path="/stats" element={<Stats />} />
-
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/gpt" element={<CalorieCounter />} />
         <Route path="/exercise-log" element={<ExerciseLog />} />
         <Route path="/landing-page" element={<LandingPage />} />
+        <Route path="/on-boarding" element={<Onboarding />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
       </Routes>
