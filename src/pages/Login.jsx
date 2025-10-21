@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import { checkProfileAndRedirect } from '../lib/userUtils'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -61,9 +60,10 @@ export default function Login() {
           }
           setProfile(profile)
 
-          checkProfileAndRedirect(navigate)
+          console.log(profile)
+
           // 🚀 NEW: check for BMI or BMR
-          if (!profile || !profile.bmi || !profile.bmr) {
+          if (!profile || !profile.bmi || !profile.bmr || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.activity_level) {
             navigate('/on-boarding')
             return
           }

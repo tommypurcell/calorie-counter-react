@@ -30,7 +30,7 @@ export default function AuthCallback() {
 
         console.log('Profile:', profile)
 
-        if (!profile || !profile.bmi || !profile.bmr) {
+        if (!profile || !profile.bmi || !profile.bmr || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.activity_level) {
           navigate('/on-boarding')
         } else {
           navigate('/', { replace: true })
