@@ -39,25 +39,27 @@ function FatCard({ value, goal }) {
 // Macro Pie Chart (Recharts)
 // ────────────────────────────────
 function MacroPieChart({ protein, carbs, fat }) {
-  const data = [
-    { name: 'Protein', value: protein },
-    { name: 'Carbs', value: carbs },
-    { name: 'Fat', value: fat }
-  ]
-
+  const total = protein + carbs + fat
+  const data = total
+    ? [
+        { name: 'Protein', value: Math.round((protein / total) * 100) },
+        { name: 'Carbs', value: (carbs / total) * 100 },
+        { name: 'Fat', value: (fat / total) * 100 }
+      ]
+    : []
   const COLORS = ['#0891b2', '#34d399', '#14b8a6']
 
   return (
     <div className="col-span-3 flex justify-center">
-      <div className="w-64 h-64">
+      <div className=" w-80 h-72">
         <ResponsiveContainer>
-          <PieChart>
-            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="80%" label>
+          <PieChart margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="70%" labelLine={false} label={({ name, value }) => `${name} ${value.toFixed(0)}%`}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip formatter={(value, name) => [`${value.toFixed(1)}%`, name]} contentStyle={{ fontSize: '10px', borderRadius: '8px' }} />
             <Legend verticalAlign="bottom" height={36} />
           </PieChart>
         </ResponsiveContainer>
