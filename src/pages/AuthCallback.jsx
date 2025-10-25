@@ -20,7 +20,7 @@ export default function AuthCallback() {
         const user = session.user
         console.log('User detected:', user.email)
 
-        const { data: profile } = await supabase.from('profiles').select('name, avatar, calorieGoal, bmi, bmr').eq('id', user.id).single()
+        const { data: profile } = await supabase.from('profiles').select('name, avatar, calorieGoal, bmi, bmr, gender, height_cm, weight_kg, activity_level').eq('id', user.id).single()
 
         if (profile) {
           if (profile.name) localStorage.setItem('name', profile.name)
