@@ -37,13 +37,21 @@ export default function Stats() {
 
   return (
     <>
-      <div className="flex flex-col items-center mt-6">
+      <div className="mt-12">
         <Greeting />
-        <DailyCalories />
-        <ExerciseSummary />
-        <GoalProgress />
-        <MacrosSummary />
-        <CaloriesChart data={data} />
+      </div>
+      <div className="flex flex-col items-center lg:grid lg:grid-cols-3 lg:gap-4 lg:items-start mt-6">
+        <div className="col-span-1">
+          <DailyCalories />
+          <ExerciseSummary />
+          <GoalProgress />
+        </div>
+        <div className="col-span-1">
+          <CaloriesChart data={data} />
+        </div>
+        <div className="col-span-1">
+          <MacrosSummary />
+        </div>
         {calorieGoal && <p className="text-sm text-gray-500 mb-2">Daily Goal: {calorieGoal} kcal</p>}
       </div>
     </>
