@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import FoodLog from '../components/ui/FoodLog'
 import FoodInput from '../components/ui/FoodInput'
+import TrainerChat from '../components/ui/TrainerChat'
 
 export default function Home() {
   const [foodLogChanged, setFoodLogChanged] = useState(false)
@@ -33,6 +34,8 @@ export default function Home() {
       <section>
         <FoodLog foodLogChanged={foodLogChanged} setFoodLogChanged={setFoodLogChanged} />
       </section>
+
+      <TrainerChat />
     </div>
   )
 }

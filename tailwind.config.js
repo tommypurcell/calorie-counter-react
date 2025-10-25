@@ -5,6 +5,7 @@ module.exports = {
     extend: {}
   },
   plugins: [
-    require("tailwindcss-animate"), // 👈 shadcn needs this
+    require('tailwindcss-animate'), // 👈 shadcn needs this
+    [require('@tailwindcss/typography')]
   ]
 }

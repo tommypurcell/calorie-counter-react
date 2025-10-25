@@ -167,6 +167,94 @@ app.post('/api/gpt', async (req, res) => {
 })
 
 // ========================================
+//  ENDPOINT: /api/trainer  (AI Fitness Coach)
+// ========================================
+app.post('/api/trainer', async (req, res) => {
+  const { message } = req.body
+  if (!message) return res.status(400).json({ error: 'message is required' })
+
+  // verify user
+  const auth = await supabase.auth.getUser((req.headers.authorization || '').split(' ')[1])
+  if (!auth?.data?.user) return res.status(401).json({ error: 'Unauthorized' })
+  const userId = auth.data.user.id
+
+  const { data: foods } = await supabase.from('foods').select('name, calories, protein, carbs, fat, eaten_at').eq('user_id', userId).order('eaten_at', { ascending: false })
+  const { data: exercises } = await supabase.from('exercises').select('exercise, calories_burned, category, completed_at').eq('user_id', userId).order('completed_at', { ascending: false })
+
+  // after fetching foods & exercises:
+  // Fetch profile
+  const { data: profile, error: profErr } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+
+  // Combine context
+  const context = `
+User Profile:
+${JSON.stringify(profile, null, 2)}
+
+Recent Foods:
+${JSON.stringify(foods, null, 2)}
+
+Recent Exercises:
+${JSON.stringify(exercises, null, 2)}
+
+User Message:
+"${message}"
+`
+  try {
+    console.log('context', context)
+    console.log('profile', profile)
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `
+You are a professional AI fitness and nutrition coach who analyzes client data like a human coach would — precisely, realistically, and safely.
+
+Your task:
+Review the user's profile (age, weight, height, BMI/BMR, goals) and their recent food and exercise logs.  
+Provide personalized coaching that is short, specific, and measurable.
+`
+          },
+          { role: 'user', content: context }
+        ],
+        temperature: 0.7
+      },
+      { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
+    )
+
+    const reply = response.data?.choices?.[0]?.message?.content?.trim() || 'Sorry, no reply.'
+
+    await supabase.from('trainer_logs').insert({
+      user_id: userId,
+      user_name: profile.name,
+      prompt: context,
+      response: JSON.stringify(response.data),
+      model: 'gpt-4o-mini',
+      endpoint: '/api/trainer',
+      status: 'success'
+    })
+
+    res.json({ message: reply })
+  } catch (err) {
+    await supabase.from('trainer_logs').insert({
+      user_id: userId,
+      user_name: profile.name,
+      prompt: context,
+      response: err.message,
+      model: 'gpt-4o-mini',
+      endpoint: '/api/trainer',
+      status: 'error'
+    })
+
+    console.error('Trainer route error:', err.message)
+    res.status(500).json({ error: 'AI trainer failed to respond' })
+  }
+})
+
+// ========================================
 //  START SERVER
 // ========================================
 app.listen(PORT, () => {
