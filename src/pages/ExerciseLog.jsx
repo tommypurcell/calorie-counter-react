@@ -1,20 +1,21 @@
 /* eslint-disable react/prop-types */
-import InputBox from '../components/ui/InputBox'
 import { supabase } from '../lib/supabase'
+import { formatDate } from '../lib/utils'
 import { loadUserData } from '../lib/userUtils'
 import React, { useState, useEffect } from 'react'
+
+import InputBox from '../components/ui/InputBox'
 import DateSelector from '../components/ui/DateSelector'
-import { formatDate } from '../lib/utils'
 
 export default function ExerciseLog() {
-  const [expandedDay, setExpandedDay] = useState(null)
-  const [userId, setUserId] = useState('user123') // Add this line
-  const [workouts, setWorkouts] = useState([])
-  const [dateStr, setDateStr] = useState(todayLocal())
   const [msg, setMsg] = useState('')
+  const [userId, setUserId] = useState('user123')
   const [msgType, setMsgType] = useState('') // "success" or "error"
+  const [dateStr, setDateStr] = useState(todayLocal())
+  const [workouts, setWorkouts] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [editValues, setEditValues] = useState({ exercise: '', calories: 0 })
+  const [expandedDay, setExpandedDay] = useState(null)
 
   // mock Supabase "exercises" table
 
@@ -166,7 +167,7 @@ export default function ExerciseLog() {
   }, [])
 
   return (
-    <div className="grid grid-cols-1 h-screen w-screen gap-8 place-items-center place-content-center justify-center items-center">
+    <div className="grid grid-cols-1 h-screen w-screen gap-8 place-items-center place-content-center justify-center items-center mt-10">
       <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center border border-gray-300 rounded-md h-full w-full sm:w-3/4 xl:w-1/4">
         <div className="flex flex-col items-center m-4 gap-4">
           <div className="flex flex-row gap-2 items-center justify-center">
