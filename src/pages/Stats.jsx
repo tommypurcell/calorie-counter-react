@@ -40,16 +40,21 @@ export default function Stats() {
       <div className="mt-12">
         <Greeting />
       </div>
-      <div className="flex flex-col items-center lg:grid lg:grid-cols-3 lg:gap-4 lg:items-start mt-6">
+      <div className="items-center lg:grid lg:grid-cols-3 gap-4 max-w-full lg:items-start mt-6 mx-6">
         <div className="col-span-1">
           <DailyCalories />
           <ExerciseSummary />
           <GoalProgress />
         </div>
+
+        <div className="col-span-1 lg:hidden">
+          <MacrosSummary />
+        </div>
+
         <div className="col-span-1">
           <CaloriesChart data={data} />
         </div>
-        <div className="col-span-1">
+        <div className="col-span-1 hidden lg:block">
           <MacrosSummary />
         </div>
         {calorieGoal && <p className="text-sm text-gray-500 mb-2">Daily Goal: {calorieGoal} kcal</p>}

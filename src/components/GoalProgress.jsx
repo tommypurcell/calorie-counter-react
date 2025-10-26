@@ -109,7 +109,7 @@ export default function GoalProgress() {
   }, [todayCals, goal])
 
   return (
-    <div className="mx-auto mb-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-4 shadow">
+    <div className="mx-auto mb-4 w-full rounded-xl border border-gray-200 bg-white p-4 shadow">
       <div className="mb-1 flex items-end justify-between">
         <div className="text-sm text-gray-500 font-semibold">Goal Progress</div>
       </div>

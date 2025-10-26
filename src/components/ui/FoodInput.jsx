@@ -169,10 +169,10 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
       <InputBox value={foodText} onChange={setFoodText} onEnter={addViaAPI} placeholder="Enter food item here" />
 
       <div className="flex gap-2">
-        <button className="bg-black text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAPI} disabled={loading}>
+        {/* <button className="bg-black text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAPI} disabled={loading}>
           {loading ? 'Loading…' : 'Check Calories (API)'}
-        </button>
-        <button className="border text-sm px-4 rounded disabled:opacity-50 h-10" onClick={addViaAI} disabled={loading}>
+        </button> */}
+        <button className="border bg-gray-700 text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAI} disabled={loading}>
           {loading ? 'Loading…' : 'Estimate with AI'}
         </button>
       </div>

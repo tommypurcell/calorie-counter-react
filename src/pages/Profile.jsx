@@ -170,7 +170,7 @@ export default function Profile() {
         {changesSaved && <div className="mb-4 text-green-700 bg-green-100 border border-green-200 rounded px-3 py-2">Changes saved.</div>}
         {/* The entire profile form. Each row is editable. */}
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="space-y-4 mx-6">
             {/* Profile Image (avatar URL) */}
             <div className="flex justify-between items-center border-b border-gray-200 pb-3">
               <div>
