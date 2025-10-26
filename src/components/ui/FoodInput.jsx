@@ -5,6 +5,7 @@ import SaveBar from './SaveBar'
 import InputBox from './InputBox'
 import DateSelector from './DateSelector'
 
+import { Info } from 'lucide-react'
 import { formatDate } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { saveFoods } from '../../lib/services/foodService'
@@ -173,8 +174,25 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
           {loading ? 'Loading…' : 'Check Calories (API)'}
         </button> */}
         <button className="border bg-gray-700 text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAI} disabled={loading}>
-          {loading ? 'Loading…' : 'Estimate with AI'}
+          {loading ? 'Loading…' : 'Estimate Calories'}
         </button>
+        <div className="flex items-center gap-2">
+          <div className="relative group">
+            <Info className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer" />
+            <div className="absolute left-6 top-0 z-10 hidden group-hover:block w-64 rounded-md bg-white p-3 text-xs text-gray-700 shadow-lg border border-gray-200">
+              <p className="font-semibold mb-1">Estimates are AI generated.</p>
+              <p className="font-semibold mb-1">Tips for better accuracy:</p>
+              <ul className="list-disc ml-4 space-y-1">
+                <ul className="list-disc ml-4 space-y-1 text-sm">
+                  <li>Be specific — include quantity (e.g. 1 plate, 5 oz, 200 g).</li>
+                  <li>Include brand or restaurant (e.g. McDonald’s, KFC).</li>
+                  <li>Add nutrition info if you know it (e.g. 150 kcal, 15g protein).</li>
+                  <li>Example input: 4 oz cooked salmon fillet</li>
+                </ul>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
       {msg && <div className={`p-2 rounded ${msgType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{msg}</div>}
