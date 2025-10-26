@@ -51,7 +51,7 @@ function MacroPieChart({ protein, carbs, fat }) {
 
   return (
     <div className="col-span-3 flex justify-center">
-      <div className=" w-80 h-72">
+      <div className=" min-w-96 h-72">
         <ResponsiveContainer>
           <PieChart margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="70%" labelLine={false} label={({ name, value }) => `${name} ${value.toFixed(0)}%`}>
