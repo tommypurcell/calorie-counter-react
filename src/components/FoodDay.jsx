@@ -8,7 +8,7 @@ export default function FoodDay({ day, dayIndex, calorieGoal, foodLog, setFoodLo
 
   return (
     <details className="group mb-2">
-      <summary className="flex cursor-pointer items-center justify-between bg-gray-200 px-2 py-2 rounded-xl group-open:rounded-b-none w-full min-w-[350px] lg:min-w-[600px]">
+      <summary className="flex cursor-pointer items-center justify-between bg-gray-200 px-2 py-2 rounded-xl group-open:rounded-b-none w-full min-w-[350px] lg:min-w-[620px]">
         <h3 className="text-gray-700 font-bold text-sm">{formatDate(day.date)}</h3>
         <span className="shrink-0 transition duration-300 group-open:-rotate-180">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">

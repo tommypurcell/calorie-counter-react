@@ -98,7 +98,7 @@ export default function FoodLog({ foodLogChanged, setFoodLogChanged }) {
   return (
     <div>
       {/* Food List */}
-      <main className="min-h-screen pb-48 pt-10">
+      <main className="min-h-screen pb-48">
         {foodLog.length > 0 ? (
           foodLog.map((day, i) => <FoodDay key={day.date} day={day} dayIndex={i} calorieGoal={calorieGoal} foodLog={foodLog} setFoodLog={setFoodLog} updateCaloriesBy={updateCaloriesBy} deleteFood={deleteFood} getFoods={getFoods} />)
         ) : (

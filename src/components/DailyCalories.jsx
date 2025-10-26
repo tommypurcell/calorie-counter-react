@@ -55,7 +55,7 @@ export default function DailyCalories() {
   }, [])
 
   return (
-    <div className="mx-auto mb-4 w-full max-w-md rounded-xl border border-gray-200 p-4 shadow-sm">
+    <div className="mb-4 w-full rounded-xl border border-gray-200 p-4 shadow-sm">
       <div className="text-sm text-gray-500 mb-1">Today</div>
       {err ? <div className="text-sm text-red-600">{err}</div> : <div className="text-2xl font-bold">{loading ? '…' : `${todayCals.toLocaleString()} kcal`}</div>}
     </div>

@@ -31,7 +31,7 @@ export default function ExerciseSummary() {
   if (loading) return <p className="text-sm text-gray-400 mt-3">Loading exercise data...</p>
 
   return (
-    <div className="mx-auto mb-4 w-full max-w-md rounded-xl border border-gray-200 p-4 shadow-sm">
+    <div className="mx-auto mb-4 w-full rounded-xl border border-gray-200 p-4 shadow-sm">
       <div className="text-sm text-gray-500 mb-1">Today</div>
       <p>Burned 🔥 {burned} kcal</p>
     </div>
