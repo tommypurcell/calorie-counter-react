@@ -4,6 +4,7 @@ import { formatDate } from '../lib/utils'
 import { loadUserData } from '../lib/userUtils'
 import React, { useState, useEffect } from 'react'
 
+import Footer from '../components/ui/Footer'
 import InputBox from '../components/ui/InputBox'
 import DateSelector from '../components/ui/DateSelector'
 
@@ -167,103 +168,101 @@ export default function ExerciseLog() {
   }, [])
 
   return (
-    <div className="grid grid-cols-1 h-screen w-screen gap-8 place-items-center place-content-center justify-center items-center mt-10">
-      <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center border border-gray-300 rounded-md h-full w-full sm:w-3/4 xl:w-1/4">
-        <div className="flex flex-col items-center m-4 gap-4">
-          <div className="flex flex-row gap-2 items-center justify-center">
-            <span>🏃</span>
-            <InputBox name="exercise" placeholder="Enter exercise here" />
-          </div>
-          <div className="flex flex-row gap-2 items-center justify-center">
-            <span>🔥</span>
-            <InputBox name="calories" placeholder="Enter calories burned" />
-          </div>
-          {/* Show date picker only after items exist */}
-          <DateSelector value={dateStr} onChange={setDateStr} />
-
-          <button type="submit" className="p-2 bg-orange-400 rounded-md w-full">
-            Submit
-          </button>
-          {msg && <div className={`text-sm p-2 rounded w-full text-center ${msgType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{msg}</div>}
-        </div>
-      </form>
-
-      {/* Workout Log */}
-      <div className="h-full p-4 w-full sm:w-3/4 xl:w-1/4 overflow-y-auto">
-        <h2 className="font-bold text-lg mb-2">Workout Log</h2>
-
-        {Object.keys(grouped).map((date) => {
-          const exercises = grouped[date] // only this day's workouts
-          let total = 0
-
-          // add up calories for that day
-          for (let i = 0; i < exercises.length; i++) {
-            total += Number(exercises[i].calories_burned) || 0
-          }
-
-          return (
-            <div key={date} className="bg-gray-100 rounded-lg mb-2">
-              <button onClick={() => toggleDay(date)} className="w-full flex justify-between items-center p-3 font-semibold text-left">
-                {formatDate(date)}
-                <span>{expandedDay === date ? '▲' : '▼'}</span>
-              </button>
-
-              {expandedDay === date && (
-                <ul className="bg-white p-3 list-disc border rounded-b-lg">
-                  {exercises.map((w) => (
-                    <li className="mx-20" key={w.id}>
-                      <div className="flex flex-row justify-between items-center">
-                        {editingId === w.id ? (
-                          <>
-                            <input className="border rounded px-1 w-24" value={editValues.exercise} onChange={(e) => setEditValues({ ...editValues, exercise: e.target.value })} />
-                            <input type="number" className="border rounded px-1 w-16 text-right" value={editValues.calories} onChange={(e) => setEditValues({ ...editValues, calories: Number(e.target.value) })} />
-                            <div className="flex flex-row gap-2">
-                              <button onClick={() => handleEdit(w.id, editValues.exercise, editValues.calories)} className="text-green-600 text-xs border border-green-400 rounded px-2 py-0.5 hover:bg-green-100">
-                                Save
-                              </button>
-                              <button onClick={() => setEditingId(null)} className="text-gray-500 text-xs border border-gray-300 rounded px-2 py-0.5 hover:bg-gray-100">
-                                Cancel
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {/* View mode */}
-                            <div>
-                              <p>{w.exercise}</p>
-                              <p className="text-sm text-gray-500">{w.calories_burned} kcal</p>
-                            </div>
-                            <div className="flex flex-row gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingId(w.id)
-                                  setEditValues({ exercise: w.exercise, calories: w.calories_burned })
-                                }}
-                                className="text-blue-500 text-xs border border-blue-400 rounded px-2 py-0.5 hover:bg-blue-100"
-                              >
-                                Edit
-                              </button>
-
-                              <button onClick={() => handleDelete(w.id)} className="text-red-500 text-xs border border-red-400 rounded px-2 py-0.5 hover:bg-red-100">
-                                Delete
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-
-                  {/* show total */}
-                  <div className="flex flex-row justify-end mt-2 font-semibold">
-                    <p>Total: {total} kcal</p>
-                  </div>
-                </ul>
-              )}
+    <div className="min-h-screen flex flex-col">
+      {/* Main grid */}
+      <div className="flex-grow grid grid-cols-1 w-full gap-8 place-items-center place-content-center justify-center items-center mt-10">
+        <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center border border-gray-300 rounded-md w-full sm:w-3/4 xl:w-1/4 p-6 shadow-sm bg-white">
+          <div className="flex flex-col items-center m-4 gap-4">
+            <div className="flex flex-row gap-2 items-center justify-center">
+              <span>🏃</span>
+              <InputBox name="exercise" placeholder="Enter exercise here" />
             </div>
-          )
-        })}
+            <div className="flex flex-row gap-2 items-center justify-center">
+              <span>🔥</span>
+              <InputBox name="calories" placeholder="Enter calories burned" />
+            </div>
+
+            <DateSelector value={dateStr} onChange={setDateStr} />
+
+            <button type="submit" className="p-2 bg-orange-400 rounded-md w-full hover:bg-orange-500 transition">
+              Submit
+            </button>
+
+            {msg && <div className={`text-sm p-2 rounded w-full text-center ${msgType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{msg}</div>}
+          </div>
+        </form>
+
+        {/* Workout Log */}
+        <div className="h-full p-4 w-full sm:w-3/4 xl:w-1/4 overflow-y-auto">
+          <h2 className="font-bold text-lg mb-2">Workout Log</h2>
+
+          {Object.keys(grouped).map((date) => {
+            const exercises = grouped[date]
+            let total = 0
+            for (let i = 0; i < exercises.length; i++) total += Number(exercises[i].calories_burned) || 0
+
+            return (
+              <div key={date} className="bg-gray-100 rounded-lg mb-2 shadow-sm">
+                <button onClick={() => toggleDay(date)} className="w-full flex justify-between items-center p-3 font-semibold text-left">
+                  {formatDate(date)}
+                  <span>{expandedDay === date ? '▲' : '▼'}</span>
+                </button>
+
+                {expandedDay === date && (
+                  <ul className="bg-white p-3 list-disc border rounded-b-lg">
+                    {exercises.map((w) => (
+                      <li className="mx-6 my-1" key={w.id}>
+                        <div className="flex flex-row justify-between items-center">
+                          {editingId === w.id ? (
+                            <>
+                              <input className="border rounded px-1 w-24" value={editValues.exercise} onChange={(e) => setEditValues({ ...editValues, exercise: e.target.value })} />
+                              <input type="number" className="border rounded px-1 w-16 text-right" value={editValues.calories} onChange={(e) => setEditValues({ ...editValues, calories: Number(e.target.value) })} />
+                              <div className="flex flex-row gap-2">
+                                <button onClick={() => handleEdit(w.id, editValues.exercise, editValues.calories)} className="text-green-600 text-xs border border-green-400 rounded px-2 py-0.5 hover:bg-green-100">
+                                  Save
+                                </button>
+                                <button onClick={() => setEditingId(null)} className="text-gray-500 text-xs border border-gray-300 rounded px-2 py-0.5 hover:bg-gray-100">
+                                  Cancel
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div>
+                                <p>{w.exercise}</p>
+                                <p className="text-sm text-gray-500">{w.calories_burned} kcal</p>
+                              </div>
+                              <div className="flex flex-row gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingId(w.id)
+                                    setEditValues({ exercise: w.exercise, calories: w.calories_burned })
+                                  }}
+                                  className="text-blue-500 text-xs border border-blue-400 rounded px-2 py-0.5 hover:bg-blue-100"
+                                >
+                                  Edit
+                                </button>
+                                <button onClick={() => handleDelete(w.id)} className="text-red-500 text-xs border border-red-400 rounded px-2 py-0.5 hover:bg-red-100">
+                                  Delete
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                    <div className="flex flex-row justify-end mt-2 font-semibold">
+                      <p>Total: {total} kcal</p>
+                    </div>
+                  </ul>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
+
+      <Footer className="mt-8" />
     </div>
   )
 }
