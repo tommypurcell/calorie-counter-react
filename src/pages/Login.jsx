@@ -50,7 +50,7 @@ export default function Login() {
           data: { user }
         } = await supabase.auth.getUser()
         if (user) {
-          const { data: profile } = await supabase.from('profiles').select('name, avatar, calorieGoal, bmi, bmr').eq('id', user.id).single()
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
           if (profile) {
             if (profile.name) localStorage.setItem('name', profile.name)
             if (profile.avatar) localStorage.setItem('avatar', profile.avatar)
@@ -63,7 +63,7 @@ export default function Login() {
           console.log(profile)
 
           // 🚀 NEW: check for BMI or BMR
-          if (!profile || !profile.bmi || !profile.bmr || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.activity_level) {
+          if (!profile.bmi || !profile.bmr || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.activity_level) {
             navigate('/on-boarding')
             return
           }
