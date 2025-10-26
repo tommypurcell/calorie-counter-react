@@ -105,7 +105,7 @@ app.post('/api/gpt', async (req, res) => {
 
   // 3️⃣ Fetch user's rate limit record
   const record = await getRateLimitRecord(userId)
-  const limit = 15 // daily limit (set higher for dev if needed)
+  const limit = 5 // daily limit (set higher for dev if needed)
 
   if (record.count >= limit) {
     console.log(`🚫 Limit reached: ${record.count}/${limit}`)
