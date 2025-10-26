@@ -142,7 +142,7 @@ export default function Nav() {
                     <span className="font-semibold">{initial}</span>
                   </div>
                 )}
-                <span className="absolute top-0 right-0 h-4 w-4 bg-red-600 text-white text-xs flex items-center justify-center rounded-full">1</span>
+                {/* <span className="absolute top-0 right-0 h-4 w-4 bg-red-600 text-white text-xs flex items-center justify-center rounded-full">1</span> */}
               </div>
               <span className="text-white">{displayName || 'User'}</span>
               <i className="fa-solid fa-caret-down fa-sm text-yellow-500"></i>
