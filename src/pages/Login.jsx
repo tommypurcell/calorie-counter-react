@@ -100,7 +100,8 @@ export default function Login() {
           className="h-full hidden md:block"
         ></div>
         {/* 2nd column */}
-        <div className="flex justify-center items-center h-full">
+        <div className="flex flex-col gap-4 justify-center items-center h-full">
+          <span className="text-black text-2xl sm:text-4xl font-thin">Welcome to Calorie Counter!</span>
           <form onSubmit={(e) => requestLogin(e)} className="bg-white grid grid-cols-1 gap-y-1 justify-items-center w-3/4 p-8 rounded-lg shadow-lg">
             {/* wrapper for all form contents (sets width) */}
 
@@ -114,13 +115,12 @@ export default function Login() {
               {/* password   */}
               <div className="w-full flex flex-col items-start">
                 <label>Password</label>
-                <input type="password" className="w-full border rounded-lg " required={true} name="password" />
-                {/* login button */}{' '}
-                <button type="submit" className="btn btn-success w-full">
-                  Login
-                </button>
+                <input type="password" className="w-full border rounded-lg form-control" required={true} name="password" />
               </div>
-
+              {/* login button */}{' '}
+              <button type="submit" className="btn btn-success w-full">
+                Login
+              </button>
               {/* google sign in */}
               <div className="w-full">
                 {' '}
