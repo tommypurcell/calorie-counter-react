@@ -44,6 +44,28 @@ export default function Onboarding() {
     const bmi = calcBMI(weight_kg, height_cm)
     const bmr = calcBMR(weight_kg, height_cm, Number(age), gender)
 
+    // activity multipliers
+    const activityMap = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    }
+    const maintenance = bmr * (activityMap[activity] || 1.2)
+
+    // goal adjustment
+    let calorieGoal = maintenance
+    if (goal === 'lose') calorieGoal *= 0.8
+    if (goal === 'gain') calorieGoal *= 1.15
+    calorieGoal = Math.round(calorieGoal)
+
+    // macros (g)
+    const protein = Math.round(weight_kg * 1.8)
+    const fat = Math.round(weight_kg * 0.9)
+    const carbCalories = calorieGoal - (protein * 4 + fat * 9)
+    const carbs = Math.round(carbCalories / 4)
+
     const { data: auth } = await supabase.auth.getUser()
     const user = auth?.user
     if (!user) return alert('Please log in first')
@@ -58,7 +80,11 @@ export default function Onboarding() {
         activity_level: activity,
         goal,
         bmi,
-        bmr
+        bmr,
+        calorieGoal,
+        proteingoal: protein,
+        carbgoal: carbs,
+        fatgoal: fat
       })
       .eq('id', user.id)
 
@@ -68,7 +94,11 @@ export default function Onboarding() {
     } else {
       setResults({
         bmi: bmi.toFixed(1),
-        bmr: bmr.toFixed(0)
+        bmr: bmr.toFixed(0),
+        calorieGoal,
+        protein,
+        carbs,
+        fat
       })
     }
   }
@@ -125,11 +155,32 @@ export default function Onboarding() {
         </button>
       </form>
       {results && (
-        <div className="mt-4 text-center grid gap-2">
-          <p className="text-gray-700 p-2 bg-green-200 rounded-lg">BMI: {results.bmi}</p>
-          <p className="text-gray-700 p-2 bg-green-200 rounded-lg">BMR: {results.bmr} kcal/day</p>
-          <a href="/" className="bg-blue-200 text-gray-800 border-2 border-black p-2 mt-2 rounded-lg hover:cursor-pointer hover:bg-blue-100 hover:underline block">
-            Start logging calories
+        <div className="mt-6 text-center space-y-2">
+          <h3 className="font-semibold text-lg text-gray-800">Your Personalized Plan</h3>
+          <p className="text-gray-600">BMI: {results.bmi}</p>
+          <p className="text-gray-600">BMR: {results.bmr} kcal/day</p>
+          <p className="text-gray-700 font-medium mt-2">
+            🎯 Daily Calorie Target: <span className="font-semibold">{results.calorieGoal}</span> kcal/day
+          </p>
+          <p className="text-sm text-gray-500 mt-1 italic">These are your daily macro goals:</p>
+
+          <div className="grid grid-cols-3 mt-3 px-5">
+            <div className="border-4 border-emerald-200 bg-emerald-50 rounded-full h-20 w-20 text-center flex-col place-self-center place-content-center">
+              <div>Protein</div>
+              <div className="font-semibold">{results.protein} g</div>
+            </div>
+            <div className="border-4 border-blue-200 bg-blue-50 rounded-full h-20 w-20 text-center flex-col place-self-center place-content-center">
+              <div>Carbs</div>
+              <div className="font-semibold">{results.carbs} g</div>
+            </div>
+            <div className="border-4 border-cyan-200 bg-cyan-50 rounded-full h-20 w-20 text-center flex-col place-self-center place-content-center">
+              <div>Fat</div>
+              <div className="font-semibold">{results.fat} g</div>
+            </div>
+          </div>
+
+          <a href="/" className="block mt-4 bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg">
+            Start Tracking
           </a>
         </div>
       )}
