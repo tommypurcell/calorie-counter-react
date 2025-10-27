@@ -43,8 +43,8 @@ export default function Stats() {
       </div>
 
       {/* main content should flex-grow */}
-      <div className="flex-grow items-center lg:grid lg:grid-cols-3 gap-4 max-w-full lg:items-start mt-6 mx-6">
-        <div className="col-span-1">
+      <div className="flex-grow items-center grid lg:grid-cols-3 gap-4 max-w-full lg:items-start mt-6 mx-6">
+        <div className="col-span-1 grid gap-3">
           <DailyCalories />
           <ExerciseSummary />
           <GoalProgress />
