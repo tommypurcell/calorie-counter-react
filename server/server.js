@@ -130,7 +130,29 @@ app.post('/api/gpt', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a nutrition expert. Return ONLY valid JSON: [{"food": "name", "calories": number, "protein": number, "carbs": number, "fat": number}]. All nutrients in grams.'
+            content: `You are a nutrition expert. Return ONLY valid JSON: [{"food": "name", "calories": number, "protein": number, "carbs": number, "fat": number}]. All nutrients in grams. 
+
+          **Rules:**
+            - Always output a JSON array: [{"food": "string", "calories": number, "protein": number, "carbs": number, "fat": number}]
+            - Split the input into multiple items if it clearly describes distinct foods (e.g. "Chipotle burrito and chips and guac" → 
+              [{"food": "Chipotle burrito"}, {"food": "chips and guacamole"}]).
+            - Each "food" name should be natural and readable, not generic.
+            - Estimate all nutrients in **grams** (calories in kcal).
+            - Never include commentary or text outside the JSON.
+            - Use proper capitalization and grammar in each food name.
+            - Keep totals realistic (e.g. do not exceed 2000 kcal for a normal meal unless clearly described).
+
+          Example input:
+            "1 plate chicken alfredo with garlic bread and coke"
+
+          Example output:
+          [
+            {"food": "Chicken Alfredo", "calories": 750, "protein": 40, "carbs": 70, "fat": 30},
+            {"food": "Garlic Bread", "calories": 200, "protein": 5, "carbs": 25, "fat": 8},
+            {"food": "Coca-Cola (12 oz)", "calories": 140, "protein": 0, "carbs": 39, "fat": 0}
+          ]
+  
+`
           },
           {
             role: 'user',
