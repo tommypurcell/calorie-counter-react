@@ -120,7 +120,7 @@ export default function Nav() {
       <nav className="bg-gray-900 p-4 flex justify-between items-center select-none">
         <div className="flex items-center gap-x-6">
           <span className="text-white text-2xl font-thin text-nowrap">Calorie Counter</span>
-          <NavLink to="/" className={({ isActive }) => `hidden sm:block font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
+          <NavLink to="/home" className={({ isActive }) => `hidden sm:block font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
             Home
           </NavLink>
           <NavLink to="/stats" className={({ isActive }) => `hidden sm:block font-bold text-lg text-nowrap ${isActive ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`} draggable="false">
@@ -175,7 +175,7 @@ export default function Nav() {
         {isMobileMenuOpen && (
           <div className="absolute top-16 left-0 w-full bg-gray-900 border-t border-gray-700 flex flex-col items-center sm:hidden shadow-lg z-30">
             <NavLink
-              to="/"
+              to="/home"
               onClick={() => setIsMobileMenuOpen(false)}
               className={({ isActive }) => `block w-full text-center py-3 text-lg font-semibold transition ${isActive ? 'bg-gray-800 border-2 border-gray-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
             >
