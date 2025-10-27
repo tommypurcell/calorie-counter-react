@@ -23,6 +23,24 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
   const [dateStr, setDateStr] = useState(todayLocal())
   const [foodText, setFoodText] = useState('')
 
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  const loadingMessages = ['Hold on…', 'Estimating your calories…', 'Almost there…', 'Thinking hard 🧠', 'Final touches…']
+
+  useEffect(() => {
+    if (!loading) return
+    const timer = setInterval(() => {
+      setMessageIndex((i) => (i + 1) % loadingMessages.length)
+    }, 1800)
+    return () => clearInterval(timer)
+  }, [loading])
+
+  async function handleAI() {
+    setLoading(true)
+    await addViaAI()
+    setLoading(false)
+  }
+
   function uid() {
     return Math.random().toString(36).slice(2, 9)
   }
@@ -173,9 +191,10 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
         {/* <button className="bg-black text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAPI} disabled={loading}>
           {loading ? 'Loading…' : 'Check Calories (API)'}
         </button> */}
-        <button className="border bg-gray-700 text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAI} disabled={loading}>
-          {loading ? 'Loading…' : 'Estimate Calories'}
+        <button className="border bg-gray-700 text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={handleAI} disabled={loading}>
+          {loading ? loadingMessages[messageIndex] : 'Estimate Calories'}
         </button>
+
         <div className="flex items-center gap-2">
           <div className="relative group">
             <Info className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer" />
