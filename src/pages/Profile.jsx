@@ -240,7 +240,7 @@ export default function Profile() {
               <div className="bg-white p-6 rounded shadow-md w-80">
                 <h3 className="text-lg font-semibold mb-3 text-red-600">Confirm Deletion</h3>
                 <p className="text-sm mb-3 text-gray-700">
-                  Type <span className="font-bold">"Delete account for {profile.name}"</span> to confirm.
+                  Type <span className="font-bold">&quot;Delete account for {profile.name}&quot;</span> to confirm.
                 </p>
                 <input type="text" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="border rounded w-full p-2 mb-4" placeholder="Type here..." />
                 <div className="flex justify-end gap-2">
