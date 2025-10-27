@@ -17,14 +17,14 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 via-slate-900 to-black text-white">
       {/* Navbar */}
-      <nav className="flex justify-between items-center px-8 py-4 border-b border-gray-700">
+      <nav className="flex justify-between items-center px-8 py-4 md:border-b md:mb-10 border-gray-700">
         <h1 className="text-2xl font-light tracking-wide">Calorie Counter</h1>
-        <div className="space-x-4">
+        <div className="hidden md:flex flex-col md:flex-row items-center gap-y-2 gap-x-4">
+          <NavLink to="/signup" className="bg-green-500 hover:bg-green-600 border-1 border-green-600 md:text-white p-2 md:px-4 md:py-2 rounded-md md:font-semibold">
+            Sign Up
+          </NavLink>
           <NavLink to="/login" className="text-gray-300 hover:text-white">
             Login
-          </NavLink>
-          <NavLink to="/signup" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md font-semibold">
-            Sign Up
           </NavLink>
         </div>
       </nav>
@@ -57,7 +57,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-700 py-4 text-center text-gray-400 text-sm">© {new Date().getFullYear()} Calorie Counter. All rights reserved.</footer>
+      <footer className="border-t mt-20 border-gray-700 py-4 text-center text-gray-400 text-sm">© {new Date().getFullYear()} Calorie Counter. All rights reserved.</footer>
     </div>
   )
 }
