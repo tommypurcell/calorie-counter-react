@@ -72,7 +72,7 @@ export default function Login() {
         // Non-fatal: navbar will still update from Nav effect
       }
 
-      navigate('/')
+      navigate('/home')
     } catch (error) {
       console.error('Supabase login error:', error)
       setErrorMsg('An error occurred. Please try again later.')
