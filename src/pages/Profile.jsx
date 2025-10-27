@@ -50,6 +50,25 @@ export default function Profile() {
     fatgoal: ''
   })
 
+  const [showDelete, setShowDelete] = useState(false)
+  const [confirmText, setConfirmText] = useState('')
+
+  const handleDeleteAccount = async () => {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+
+    if (user) {
+      const { error } = await supabase.from('profiles').delete().eq('id', user.id)
+      if (error) console.error('❌ Error deleting profile:', error)
+      else {
+        await supabase.auth.signOut()
+        navigate('/')
+        console.log('✅ Profile deleted and signed out')
+      }
+    }
+  }
+
   useEffect(() => {
     // On first render, load the current user's profile from Supabase.
     // If there is no profile row yet, create one.
@@ -127,13 +146,13 @@ export default function Profile() {
       // Build the payload for updating the profile
       // Note: we convert calorieGoal to a number (or null if left blank)
       const updatedProfile = {
-        avatar: fieldValues.avatar,
         name: fieldValues.name,
         email: fieldValues.email,
-        calorieGoal: fieldValues.calorieGoal === '' ? null : Number(fieldValues.calorieGoal),
-        proteingoal: fieldValues.proteingoal === '' ? null : Number(fieldValues.proteingoal),
+        avatar: fieldValues.avatar,
+        fatgoal: fieldValues.fatgoal === '' ? null : Number(fieldValues.fatgoal),
         carbgoal: fieldValues.carbgoal === '' ? null : Number(fieldValues.carbgoal),
-        fatgoal: fieldValues.fatgoal === '' ? null : Number(fieldValues.fatgoal)
+        calorieGoal: fieldValues.calorieGoal === '' ? null : Number(fieldValues.calorieGoal),
+        proteingoal: fieldValues.proteingoal === '' ? null : Number(fieldValues.proteingoal)
       }
 
       // Update the 'profiles' table for this user
@@ -145,8 +164,8 @@ export default function Profile() {
       }
 
       // Show a success message and reflect the new data immediately in the UI
-      setChangesSaved(true)
       setEditField(null)
+      setChangesSaved(true)
       setProfile((prev) => ({ ...prev, ...updatedProfile }))
 
       // Keep navbar and other UI in sync via localStorage
@@ -211,6 +230,35 @@ export default function Profile() {
             <EditableField label="Fat Goal" field="fatgoal" editField={editField} fieldValues={fieldValues} profile={profile} handleChange={handleChange} handleEditClick={handleEditClick} />
           </div>
         </form>
+        <div className="flex justify-end max-w-3xl mx-auto mt-2 border-gray-300 pt-6">
+          <button onClick={() => setShowDelete(true)} className="border-1 border-red-500 text-black px-2 py-1 rounded hover:bg-red-300 text-sm">
+            Delete Account
+          </button>
+
+          {showDelete && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+              <div className="bg-white p-6 rounded shadow-md w-80">
+                <h3 className="text-lg font-semibold mb-3 text-red-600">Confirm Deletion</h3>
+                <p className="text-sm mb-3 text-gray-700">
+                  Type <span className="font-bold">"Delete account for {profile.name}"</span> to confirm.
+                </p>
+                <input type="text" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="border rounded w-full p-2 mb-4" placeholder="Type here..." />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setShowDelete(false)} className="px-3 py-1 border rounded text-gray-600 hover:bg-gray-100">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={confirmText !== `Delete account for ${profile.name}`}
+                    className={`px-3 py-1 rounded text-white ${confirmText === `Delete account for ${profile.name}` ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400'}`}
+                  >
+                    Confirm Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </>
   )
