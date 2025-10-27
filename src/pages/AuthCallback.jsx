@@ -20,7 +20,7 @@ export default function AuthCallback() {
         const user = session.user
         console.log('User detected:', user.email)
 
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id)
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
         if (profile) {
           if (profile.name) localStorage.setItem('name', profile.name)
@@ -33,7 +33,7 @@ export default function AuthCallback() {
         if (!profile.bmi || !profile.bmr || !profile.gender || !profile.height_cm || !profile.weight_kg || !profile.activity_level) {
           navigate('/on-boarding')
         } else {
-          navigate('/', { replace: true })
+          navigate('/home', { replace: true })
         }
       }
     })
