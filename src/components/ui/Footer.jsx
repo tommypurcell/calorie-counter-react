@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-400 text-sm py-6 px-4 mt-24 h-52">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
         <p className="text-center sm:text-left">© {new Date().getFullYear()} Calorie Counter</p>
-        <div className="flex space-x-4">
+        <div className="flex flex-col mt-10">
           <a href="/privacy" className="hover:text-white">
             Privacy
           </a>

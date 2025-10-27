@@ -9,40 +9,51 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
+import ContactForm from './pages/Contact'
 import Onboarding from './pages/OnBoarding'
 import LandingPage from './pages/LandingPage'
 import AuthCallback from './pages/AuthCallback'
 import CalorieCounter from './pages/CalorieCounter'
 
 // components
-import Nav from './components/Nav'
 import { supabase } from './lib/supabase'
-import ExerciseLog from './pages/ExerciseLog'
 import { render } from '@testing-library/react'
+
+import Nav from './components/Nav'
+import Footer from './components/ui/Footer'
+import ExerciseLog from './pages/ExerciseLog'
+import { PrivacyPolicy, TermsOfService } from './pages/Privacy'
 
 function AppContent() {
   const location = useLocation()
   const [loggedIn, setLoggedIn] = useState(false)
   const [profilePic, setProfilePic] = useState('')
   const [calorieGoal, setCalorieGoal] = useState(0)
+  const [checkingAuth, setCheckingAuth] = useState(true)
 
   useEffect(() => {
     const checkLogin = async () => {
       const { data } = await supabase.auth.getUser()
       const user = data?.user
+      setLoggedIn(!!user)
+      setCheckingAuth(false)
+
       if (user) localStorage.setItem('isLoggedIn', 'true')
       else localStorage.removeItem('isLoggedIn')
     }
     checkLogin()
 
-    let renderAPI = process.env.REACT_APP_API_BASE
-
-    // wake up backend
+    // Wake backend
+    const renderAPI = process.env.REACT_APP_API_BASE
     fetch(`${renderAPI}/health`).catch(() => {})
   }, [])
 
   // condition updates automatically on route change
-  const hideNav = location.pathname === '/login' || location.pathname === '/signup'
+  // pages where we *always* hide the Nav
+  const noNavRoutes = ['/', '/login', '/signup', '/auth/callback']
+
+  // hide nav if it's a no-nav route, or if it's the landing page shown at "/"
+  const hideNav = (!loggedIn && location.pathname === '/') || noNavRoutes.includes(location.pathname)
 
   return (
     <>
@@ -54,11 +65,15 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/gpt" element={<CalorieCounter />} />
-        <Route path="/exercise-log" element={<ExerciseLog />} />
-        <Route path="/landing-page" element={<LandingPage />} />
+        <Route path="/contact" element={<ContactForm />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/on-boarding" element={<Onboarding />} />
+        <Route path="/exercise-log" element={<ExerciseLog />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={<Home calorieGoal={calorieGoal} />} />
+        <Route path="/home" element={<Home />} />
+
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </>
   )
