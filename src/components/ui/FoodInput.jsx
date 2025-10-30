@@ -6,9 +6,9 @@ import InputBox from './InputBox'
 import DateSelector from './DateSelector'
 
 import { Info } from 'lucide-react'
-import { formatDate } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { saveFoods } from '../../lib/services/foodService'
+import { formatDate } from '../../lib/utils'
 import { getGptEstimate } from '../../lib/services/gptService'
 import { getCaloriesFromEdamam } from '../../lib/services/edamamService'
 import { addCalories, subtractCalories, removeFood } from '../../lib/foodUtils'
@@ -19,10 +19,10 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
   const [foods, setFoods] = useState([]) // [{id,name,calories}]
   const [saving, setSaving] = useState(false)
   const [msgType, setMsgType] = useState('') // success | error
-  const [loading, setLoading] = useState(false)
   const [dateStr, setDateStr] = useState(todayLocal())
+  const [loading, setLoading] = useState(false)
+  const [requests, setRequests] = useState(0)
   const [foodText, setFoodText] = useState('')
-
   const [messageIndex, setMessageIndex] = useState(0)
 
   const loadingMessages = ['Hold on…', 'Estimating your calories…', 'Almost there…', 'Thinking hard 🧠', 'Final touches…']
@@ -54,6 +54,17 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
     return `${y}-${m}-${day}`
   }
 
+  async function checkRequests() {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    if (!user) return
+    const { data, error } = await supabase.from('api_usage').select('count').eq('user_id', user.id).single()
+    if (!error && data) setRequests(data.count)
+  }
+
+  checkRequests()
+
   async function addViaAPI() {
     if (!foodText.trim()) {
       setMsg('Type a food first')
@@ -83,6 +94,8 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
   }
 
   async function addViaAI() {
+    console.log('add via ai called')
+    console.log(foodText)
     if (!foodText.trim()) {
       setMsg('Type a food first')
       setMsgType('error')
@@ -185,7 +198,7 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
     <div className="max-w-xl mx-auto p-4 border rounded space-y-4">
       <h1 className="text-2xl font-bold">Add Food</h1>
 
-      <InputBox value={foodText} onChange={setFoodText} onEnter={addViaAPI} placeholder="Enter food item here" />
+      <InputBox value={foodText} onChange={setFoodText} onEnter={addViaAI} placeholder="Enter food item here" disabled={requests >= 5} />
 
       <div className="flex gap-2">
         {/* <button className="bg-black text-sm text-white px-4 rounded disabled:opacity-50 h-10" onClick={addViaAPI} disabled={loading}>
@@ -210,6 +223,18 @@ export default function FoodInput({ foodLogChanged, setFoodLogChanged }) {
                 </ul>
               </ul>
             </div>
+          </div>
+          <div className="text-sm text-gray-600 mt-2">
+            {!requests ? null : 5 - requests > 0 ? (
+              <p>{5 - requests} / 5 food estimates remaining today</p>
+            ) : (
+              <>
+                <p className="text-red-500">You are out of requests today.</p>
+                <a href="/pricing" className="text-blue-500 font-semibold underline underline-offset-2">
+                  Get more!
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>
