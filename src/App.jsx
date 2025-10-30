@@ -9,11 +9,13 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
+import Checkout from './pages/Checkout'
 import ContactForm from './pages/Contact'
 import Onboarding from './pages/OnBoarding'
 import LandingPage from './pages/LandingPage'
 import AuthCallback from './pages/AuthCallback'
 import CalorieCounter from './pages/CalorieCounter'
+import Pricing from './pages/Pricing'
 
 // components
 import { supabase } from './lib/supabase'
@@ -72,6 +74,8 @@ function AppContent() {
         <Route path="/exercise-log" element={<ExerciseLog />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/checkout" element={<Checkout />} />
 
         <Route path="/" element={<LandingPage />} />
       </Routes>
