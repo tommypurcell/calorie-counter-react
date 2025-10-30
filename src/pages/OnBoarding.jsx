@@ -179,7 +179,7 @@ export default function Onboarding() {
             </div>
           </div>
 
-          <a href="/" className="block mt-4 bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg">
+          <a href="/home" className="block mt-4 bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg">
             Start Tracking
           </a>
         </div>

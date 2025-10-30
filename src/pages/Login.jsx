@@ -15,10 +15,11 @@ export default function Login() {
     console.log('[OAuth] Starting Google sign-in...')
     const redirectTo = `${window.location.origin}/auth/callback`
     console.log('[OAuth] Using redirectTo:', redirectTo)
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo
+        redirectTo: `${window.location.origin}/auth/callback?redirect=/home`
       }
     })
 
