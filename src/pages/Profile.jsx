@@ -557,7 +557,7 @@ export default function Profile() {
           <div className="w-11/12 max-w-sm rounded-3xl border border-gray-100 bg-white p-6 text-gray-900 shadow-2xl">
             <h3 className="text-xl font-semibold text-red-600">Confirm Deletion</h3>
             <p className="mt-3 text-sm text-gray-600">
-              Type <span className="font-semibold text-gray-900">"{deletePhrase}"</span> to confirm.
+              Type <span className="font-semibold text-gray-900">&quot;{deletePhrase}&quot;</span> to confirm.
             </p>
             <input
               type="text"
