@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getClientFoodLogs, getClientExerciseLogs } from '../lib/coachUtils'
+import { getWeights } from '../lib/weightUtils'
+import { kgToLb } from '../lib/unitUtils'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function ClientProfile() {
   const { clientId } = useParams()
@@ -13,7 +16,8 @@ export default function ClientProfile() {
   const [client, setClient] = useState(null)
   const [foodLogs, setFoodLogs] = useState([])
   const [exerciseLogs, setExerciseLogs] = useState([])
-  const [activeTab, setActiveTab] = useState('food') // 'food' or 'exercise'
+  const [weights, setWeights] = useState([]) // client's weight entries
+  const [activeTab, setActiveTab] = useState('food') // 'food' or 'exercise' or 'weight'
 
   useEffect(() => {
     loadClientProfile()
@@ -54,11 +58,12 @@ export default function ClientProfile() {
 
       setClient(clientProfile)
 
-      // Load food and exercise logs
-      const [foods, exercises] = await Promise.all([getClientFoodLogs(clientId), getClientExerciseLogs(clientId)])
+      // Load food, exercise, and weight logs
+      const [foods, exercises, clientWeights] = await Promise.all([getClientFoodLogs(clientId), getClientExerciseLogs(clientId), getWeights(clientId)])
 
       setFoodLogs(foods)
       setExerciseLogs(exercises)
+      setWeights(clientWeights) // save client's weights
     } catch (err) {
       console.error('Load client error:', err)
       setError(err.message || 'Failed to load client profile')
@@ -157,6 +162,12 @@ export default function ClientProfile() {
             >
               Exercise Log ({exerciseLogs.length})
             </button>
+            <button
+              onClick={() => setActiveTab('weight')}
+              className={`flex-1 px-6 py-3 font-semibold transition ${activeTab === 'weight' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Weight ({weights.length})
+            </button>
           </div>
 
           <div className="p-6">
@@ -211,6 +222,71 @@ export default function ClientProfile() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Weight Tab */}
+            {activeTab === 'weight' && (
+              <div>
+                {weights.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No weight entries yet</p>
+                ) : (
+                  <div>
+                    {/* Weight Chart */}
+                    <div className="w-full h-64 mb-6">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={
+                            // Make chart data from weights (oldest to newest)
+                            [...weights].reverse().map((w) => {
+                              // Get weight in kg from database
+                              const weightKg = parseFloat(w.weight_kg)
+                              // Convert to lb for display (coaches see in lb)
+                              const weightLb = kgToLb(weightKg)
+                              return {
+                                date: new Date(w.logged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                                weight: parseFloat(weightLb.toFixed(1))
+                              }
+                            })
+                          }
+                        >
+                          <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#6b7280" />
+                          <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" domain={['dataMin - 5', 'dataMax + 5']} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: '#fff',
+                              border: '1px solid #10b981',
+                              borderRadius: '8px',
+                              fontSize: '12px'
+                            }}
+                          />
+                          <Line type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Weight List */}
+                    <div className="space-y-2">
+                      {weights.map((weight) => {
+                        // Get weight in kg from database
+                        const weightKg = parseFloat(weight.weight_kg)
+                        // Convert to lb for display
+                        const weightLb = kgToLb(weightKg).toFixed(1)
+
+                        return (
+                          <div key={weight.id} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-gray-500">{new Date(weight.logged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                              <p className="text-lg font-semibold text-gray-900">
+                                {weightLb} lb
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
