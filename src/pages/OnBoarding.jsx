@@ -70,6 +70,9 @@ export default function Onboarding() {
     const user = auth?.user
     if (!user) return alert('Please log in first')
 
+    // Determine unit preference
+    const unitPreference = weightUnit === 'kg' ? 'metric' : 'imperial'
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -84,7 +87,8 @@ export default function Onboarding() {
         calorieGoal,
         proteingoal: protein,
         carbgoal: carbs,
-        fatgoal: fat
+        fatgoal: fat,
+        unit_preference: unitPreference
       })
       .eq('id', user.id)
 

@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'tw-animate-css';
+
 * {
   margin: 0;
   padding: 0;
@@ -48,7 +48,7 @@ main {
 
 h1 {
   text-align: center;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
 }
 
 .nutrients ul {

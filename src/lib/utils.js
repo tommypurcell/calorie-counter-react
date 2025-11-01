@@ -1,5 +1,6 @@
 // lib/utils.js
 import { clsx } from 'clsx'
+import { Lectern } from 'lucide-react'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs) {
@@ -57,4 +58,30 @@ export function getToday() {
     formatted: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
     shortDate: `${year}-${month}-${day}`
   }
+}
+
+export function getMonthAndDayOnly(date) {
+  if (!date) return ''
+
+  const [_, month, dayRaw] = date.split('-')
+
+  const months = {
+    ['01']: 'Jan',
+    ['02']: 'Feb',
+    ['03']: 'Mar',
+    ['04']: 'Apr',
+    ['05']: 'May',
+    ['06']: 'Jun',
+    ['07']: 'Jul',
+    ['08']: 'Aug',
+    ['09']: 'Sep',
+    ['10']: 'Oct',
+    ['11']: 'Nov',
+    ['12']: 'Dec'
+  }
+
+  // Remove leading zero on day (e.g., "05" → "5")
+  const day = dayRaw.startsWith('0') ? dayRaw.substring(1) : dayRaw
+
+  return `${months[month]} ${day}`
 }

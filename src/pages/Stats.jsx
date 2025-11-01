@@ -3,14 +3,15 @@ import React, { useEffect, useState } from 'react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts'
 import { loadUserData } from '../lib/userUtils'
 import Nav from '../components/Nav'
+import Footer from '../components/ui/Footer'
 import Greeting from '../components/ui/Greeting'
-import DailyCalories from '../components/DailyCalories'
+import WeightLog from '../components/WeightLog'
 import GoalProgress from '../components/GoalProgress'
 import MacrosSummary from '../components/MacrosSummary'
+import DailyCalories from '../components/DailyCalories'
 import CaloriesChart from '../components/CaloriesChart'
 import ExerciseSummary from '../components/ExerciseSummary'
 import { getHistoryTotals } from '../lib/statsUtils'
-import Footer from '../components/ui/Footer'
 
 export default function Stats() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -43,23 +44,21 @@ export default function Stats() {
       </div>
 
       {/* main content should flex-grow */}
-      <div className="flex-grow items-center grid lg:grid-cols-3 gap-4 max-w-full lg:items-start mt-6 mx-6">
-        <div className="col-span-1 grid gap-3">
-          <DailyCalories />
-          <ExerciseSummary />
-          <GoalProgress />
+      <div className="flex-grow items-center grid lg:grid-cols-4 gap-4 max-w-full lg:items-start mt-6 mx-20">
+        <div className="lg:col-span-2 grid gap-3">
+          <div className="flex flex-col lg:flex-row gap-1">
+            <DailyCalories />
+            <ExerciseSummary />
+          </div>
+          <div className="flex flex-col lg:flex-row gap-1">
+            <MacrosSummary />
+            <GoalProgress />
+          </div>
         </div>
 
-        <div className="col-span-1 lg:hidden">
-          <MacrosSummary />
-        </div>
-
-        <div className="col-span-1">
+        <div className="lg:col-span-2 grid gap-3">
           <CaloriesChart data={data} />
-        </div>
-
-        <div className="col-span-1 hidden lg:block">
-          <MacrosSummary />
+          <WeightLog />
         </div>
 
         {calorieGoal && <p className="text-sm text-gray-500 mb-2">Daily Goal: {calorieGoal} kcal</p>}

@@ -1,6 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import BecomeCoach from '../components/BecomeCoach'
+import EnterCoachCode from '../components/EnterCoachCode'
+import { kgToLb, lbToKg, cmToFeetInches, feetInchesToCm, formatWeight, formatHeight } from '../lib/unitUtils'
 
 const toStringValue = (value) => (value === null || value === undefined ? '' : String(value))
 const toNullableNumber = (value) => {
@@ -19,29 +22,70 @@ const computeBMI = (heightCm, weightKg) => {
   return Number.isNaN(bmi) ? null : Number(bmi.toFixed(1))
 }
 
-function InfoCard({ title, items, isEditing, fieldValues, handleChange }) {
+function InfoCard({ title, items, isEditing, fieldValues, handleChange, unitPreference, heightFeet, heightInches, weightLb, setHeightFeet, setHeightInches, setWeightLb }) {
   return (
     <section className="rounded-2xl border border-gray-100 p-5">
       <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">{title}</h3>
       <dl className="mt-4 space-y-3">
-        {items.map(({ label, value, name, editable, inputType = 'text', inputProps, unit }) => {
+        {items.map(({ label, value, name, editable, inputType = 'text', inputProps, unit, isHeight, isWeight }) => {
           const showInput = Boolean(isEditing && editable && name)
           const inputValue = name ? fieldValues[name] ?? '' : ''
+
           return (
             <div key={label} className="flex items-center justify-between gap-4 text-sm">
               <dt className="text-gray-500">{label}</dt>
               <dd className="flex items-center">
                 {showInput ? (
                   <>
-                    <input
-                      type={inputType}
-                      name={name}
-                      value={inputValue}
-                      onChange={handleChange}
-                      className="w-24 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                      {...inputProps}
-                    />
-                    {unit && <span className="ml-2 text-xs text-gray-500">{unit}</span>}
+                    {/* Special handling for imperial height (feet and inches) */}
+                    {isHeight && unitPreference === 'imperial' ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={heightFeet}
+                          onChange={(e) => setHeightFeet(e.target.value)}
+                          placeholder="Feet"
+                          className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                          step="1"
+                        />
+                        <span className="text-xs text-gray-500">ft</span>
+                        <input
+                          type="number"
+                          value={heightInches}
+                          onChange={(e) => setHeightInches(e.target.value)}
+                          placeholder="In"
+                          className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                          step="1"
+                        />
+                        <span className="text-xs text-gray-500">in</span>
+                      </div>
+                    ) : isWeight && unitPreference === 'imperial' ? (
+                      /* Special handling for imperial weight (pounds) */
+                      <>
+                        <input
+                          type="number"
+                          value={weightLb}
+                          onChange={(e) => setWeightLb(e.target.value)}
+                          placeholder="Weight"
+                          className="w-24 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                          step="0.1"
+                        />
+                        <span className="ml-2 text-xs text-gray-500">lb</span>
+                      </>
+                    ) : (
+                      /* Default input for metric or other fields */
+                      <>
+                        <input
+                          type={inputType}
+                          name={name}
+                          value={inputValue}
+                          onChange={handleChange}
+                          className="w-24 rounded-lg border border-gray-200 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                          {...inputProps}
+                        />
+                        {unit && <span className="ml-2 text-xs text-gray-500">{unit}</span>}
+                      </>
+                    )}
                   </>
                 ) : (
                   <span className="font-medium text-gray-900">{value ?? '—'}</span>
@@ -75,6 +119,10 @@ export default function Profile() {
   const [showDelete, setShowDelete] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [loading, setLoading] = useState(true)
+  const [unitPreference, setUnitPreference] = useState('imperial') // imperial or metric
+  const [heightFeet, setHeightFeet] = useState('')
+  const [heightInches, setHeightInches] = useState('')
+  const [weightLb, setWeightLb] = useState('')
 
   const syncFieldValues = (data) => {
     setFieldValues({
@@ -103,7 +151,7 @@ export default function Profile() {
 
       await supabase.from('profiles').upsert({ id: user.id, email: user.email || '' }, { onConflict: 'id' })
 
-      const { data, error } = await supabase.from('profiles').select('avatar, name, email, calorieGoal, proteingoal, carbgoal, fatgoal, height_cm, weight_kg, bmi, bmr').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
       if (error) {
         console.error('Error fetching profile:', error.message)
@@ -113,6 +161,23 @@ export default function Profile() {
 
       setProfile(data)
       syncFieldValues(data)
+
+      // Load unit preference
+      if (data?.unit_preference) {
+        setUnitPreference(data.unit_preference)
+      }
+
+      // Set imperial editing values if preference is imperial
+      if (data?.unit_preference === 'imperial') {
+        if (data?.height_cm) {
+          const { feet, inches } = cmToFeetInches(data.height_cm)
+          setHeightFeet(String(feet))
+          setHeightInches(String(inches))
+        }
+        if (data?.weight_kg) {
+          setWeightLb(kgToLb(data.weight_kg).toFixed(1))
+        }
+      }
 
       if (data) {
         localStorage.setItem('avatar', data.avatar || '')
@@ -182,6 +247,25 @@ export default function Profile() {
     event.preventDefault()
     if (!userId) return
 
+    // Convert imperial to metric if needed
+    let finalHeightCm = toNullableNumber(fieldValues.height_cm)
+    let finalWeightKg = toNullableNumber(fieldValues.weight_kg)
+
+    if (unitPreference === 'imperial') {
+      // Convert height from feet/inches to cm
+      const feet = toNullableNumber(heightFeet)
+      const inches = toNullableNumber(heightInches)
+      if (feet !== null) {
+        finalHeightCm = feetInchesToCm(feet, inches || 0)
+      }
+
+      // Convert weight from lb to kg
+      const lb = toNullableNumber(weightLb)
+      if (lb !== null) {
+        finalWeightKg = lbToKg(lb)
+      }
+    }
+
     const updatedProfile = {
       name: fieldValues.name.trim() || null,
       email: fieldValues.email.trim() || null,
@@ -190,8 +274,8 @@ export default function Profile() {
       carbgoal: toNullableNumber(fieldValues.carbgoal),
       calorieGoal: toNullableNumber(fieldValues.calorieGoal),
       proteingoal: toNullableNumber(fieldValues.proteingoal),
-      height_cm: toNullableNumber(fieldValues.height_cm),
-      weight_kg: toNullableNumber(fieldValues.weight_kg)
+      height_cm: finalHeightCm,
+      weight_kg: finalWeightKg
     }
 
     const bmiValue = computeBMI(updatedProfile.height_cm, updatedProfile.weight_kg)
@@ -209,6 +293,18 @@ export default function Profile() {
     syncFieldValues(mergedProfile)
     setIsEditing(false)
     setChangesSaved(true)
+
+    // Update imperial values for next edit
+    if (unitPreference === 'imperial') {
+      if (updatedProfile.height_cm) {
+        const { feet, inches } = cmToFeetInches(updatedProfile.height_cm)
+        setHeightFeet(String(feet))
+        setHeightInches(String(inches))
+      }
+      if (updatedProfile.weight_kg) {
+        setWeightLb(kgToLb(updatedProfile.weight_kg).toFixed(1))
+      }
+    }
 
     localStorage.setItem('avatar', updatedProfile.avatar || '')
     localStorage.setItem('name', updatedProfile.name || '')
@@ -250,9 +346,49 @@ export default function Profile() {
     { label: 'Fat', name: 'fatgoal', value: formatUnit(previewValue('fatgoal'), 'g'), editable: true, inputType: 'number', inputProps: { step: '1' }, unit: 'g' }
   ]
 
+  // Format height and weight based on unit preference
+  let heightDisplay = null
+  let weightDisplay = null
+
+  if (unitPreference === 'imperial') {
+    // Imperial: show in ft/in and lb
+    if (previewHeight) {
+      heightDisplay = formatHeight(parseFloat(previewHeight), 'imperial')
+    }
+    if (previewWeight) {
+      weightDisplay = formatWeight(parseFloat(previewWeight), 'imperial')
+    }
+  } else {
+    // Metric: show in cm and kg
+    if (previewHeight) {
+      heightDisplay = formatHeight(parseFloat(previewHeight), 'metric')
+    }
+    if (previewWeight) {
+      weightDisplay = formatWeight(parseFloat(previewWeight), 'metric')
+    }
+  }
+
   const bodyInfo = [
-    { label: 'Height', name: 'height_cm', value: formatUnit(previewHeight, 'cm'), editable: true, inputType: 'number', inputProps: { step: '0.1' }, unit: 'cm' },
-    { label: 'Weight', name: 'weight_kg', value: formatUnit(previewWeight, 'kg'), editable: true, inputType: 'number', inputProps: { step: '0.1' }, unit: 'kg' },
+    {
+      label: 'Height',
+      name: 'height_cm',
+      value: heightDisplay,
+      editable: true,
+      inputType: 'number',
+      inputProps: { step: '0.1' },
+      unit: unitPreference === 'imperial' ? 'ft/in' : 'cm',
+      isHeight: true // custom flag for special rendering
+    },
+    {
+      label: 'Weight',
+      name: 'weight_kg',
+      value: weightDisplay,
+      editable: true,
+      inputType: 'number',
+      inputProps: { step: '0.1' },
+      unit: unitPreference === 'imperial' ? 'lb' : 'kg',
+      isWeight: true // custom flag for special rendering
+    },
     { label: 'BMI', value: previewBMI ? previewBMI : null },
     { label: 'BMR', value: formatUnit(profile?.bmr, 'kcal') }
   ]
@@ -325,6 +461,18 @@ export default function Profile() {
                     syncFieldValues(profile || {})
                     setIsEditing(true)
                     setChangesSaved(false)
+
+                    // Populate imperial editing values if needed
+                    if (unitPreference === 'imperial') {
+                      if (profile?.height_cm) {
+                        const { feet, inches } = cmToFeetInches(profile.height_cm)
+                        setHeightFeet(String(feet))
+                        setHeightInches(String(inches))
+                      }
+                      if (profile?.weight_kg) {
+                        setWeightLb(kgToLb(profile.weight_kg).toFixed(1))
+                      }
+                    }
                   }}
                   className="rounded-full border border-gray-200 px-4 py-1 text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
                 >
@@ -336,10 +484,66 @@ export default function Profile() {
 
           <div className="grid gap-6 px-6 py-6 sm:grid-cols-2">
             {viewSections.map((section) => (
-              <InfoCard key={section.title} title={section.title} items={section.items} isEditing={isEditing} fieldValues={fieldValues} handleChange={handleChange} />
+              <InfoCard
+                key={section.title}
+                title={section.title}
+                items={section.items}
+                isEditing={isEditing}
+                fieldValues={fieldValues}
+                handleChange={handleChange}
+                unitPreference={unitPreference}
+                heightFeet={heightFeet}
+                heightInches={heightInches}
+                weightLb={weightLb}
+                setHeightFeet={setHeightFeet}
+                setHeightInches={setHeightInches}
+                setWeightLb={setWeightLb}
+              />
             ))}
           </div>
         </form>
+
+        {/* Coach Features */}
+        <div className="mt-6 space-y-6">
+          {/* If user is a coach */}
+          {profile?.is_coach && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">You are a Coach!</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Your coach code: <code className="font-mono font-bold text-blue-900">{profile.coach_code}</code>
+              </p>
+              <Link to="/coach-dashboard" className="inline-block bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold">
+                View Coach Dashboard
+              </Link>
+            </div>
+          )}
+
+          {/* If user is NOT a coach and does NOT have a coach */}
+          {!profile?.is_coach && !profile?.coach_id && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <BecomeCoach
+                userId={userId}
+                onSuccess={(updatedProfile) => {
+                  setProfile((prev) => ({ ...prev, is_coach: true, coach_code: updatedProfile.coach_code }))
+                }}
+              />
+              <EnterCoachCode
+                userId={userId}
+                onSuccess={(coach) => {
+                  setProfile((prev) => ({ ...prev, coach_id: coach.id }))
+                }}
+              />
+            </div>
+          )}
+
+          {/* If user has a coach but is NOT a coach themselves */}
+          {!profile?.is_coach && profile?.coach_id && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">You have a coach!</h3>
+              <p className="text-sm text-gray-600">Your coach is helping you reach your fitness goals.</p>
+            </div>
+          )}
+        </div>
 
         <div className="mt-6 flex justify-end">
           <button type="button" onClick={() => setShowDelete(true)} className="rounded-full border border-red-200 bg-red-50 px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100">
@@ -353,7 +557,7 @@ export default function Profile() {
           <div className="w-11/12 max-w-sm rounded-3xl border border-gray-100 bg-white p-6 text-gray-900 shadow-2xl">
             <h3 className="text-xl font-semibold text-red-600">Confirm Deletion</h3>
             <p className="mt-3 text-sm text-gray-600">
-              Type <span className="font-semibold text-gray-900">"{deletePhrase}"</span> to confirm.
+              Type <span className="font-semibold text-gray-900">&quot;{deletePhrase}&quot;</span> to confirm.
             </p>
             <input
               type="text"

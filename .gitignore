@@ -59,3 +59,10 @@ Thumbs.db
 # Temporary files and caches
 *.tmp
 *.cache
+
+
+/instructions.md
+/STRIPE_SETUP.md
+/CLAUDE.md
+
+
