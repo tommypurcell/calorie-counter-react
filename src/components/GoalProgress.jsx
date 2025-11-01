@@ -23,7 +23,7 @@ export function BaseProgressBar({ label, total, goal, color = 'bg-green-500', he
       <div className={`${height} w-full bg-gray-200 rounded-full overflow-hidden`}>
         <div className={`${height} ${color || barColor} transition-all`} style={{ width: `${pctDisplay}%` }} />
       </div>
-      <div className="text-[10px] text-gray-400 mt-1">{pct < 90 ? 'Under goal' : pct <= 110 ? 'On target' : 'Over goal'}</div>
+      <div className="text-xs text-gray-400 mt-1">{pct < 90 ? 'Under goal' : pct <= 110 ? 'On target' : 'Over goal'}</div>
     </div>
   )
 }
@@ -109,23 +109,25 @@ export default function GoalProgress() {
   }, [todayCals, goal])
 
   return (
-    <div className="mx-auto w-full rounded-xl border border-gray-200 bg-white p-4 shadow">
-      <div className="mb-1 flex items-end justify-between">
-        <div className="text-sm text-gray-500 font-semibold">Goal Progress</div>
+    <>
+      <div className="w-full rounded-xl border border-gray-200 bg-white p-4 shadow">
+        <div className="mb-1 flex items-end justify-between">
+          <div className="text-sm text-gray-500 font-semibold">Goal Progress</div>
+        </div>
+
+        {/* Progress bars */}
+        <div className="mt-3 grid grid-cols-1 gap-2">
+          <BaseProgressBar label="Eaten 🍱" total={todayEaten} goal={goal || 2000} height="h-2" color="bg-blue-500" />
+          <BaseProgressBar label="Burned 🔥" total={todayBurned} goal={goal || 2000} height="h-2" color="bg-orange-500" />
+          <BaseProgressBar label="Net ⚖️" total={todayCals} goal={goal || 2000} height="h-2" color={todayCals < goal ? 'bg-green-500' : 'bg-red-500'} />
+        </div>
+
+        {goal && <div className="mt-2 text-xs text-gray-600">Remaining: {Math.max(goal - todayCals, 0)} kcal</div>}
+
+        {/* Helper text */}
+        {!loading && goal && <div className="mt-3 text-xs text-gray-500">{todayCals <= goal ? 'Nice! Under goal today.' : `Over goal today by ${todayCals - goal} calories`}</div>}
+        {err && <div className="mt-2 text-xs text-red-600">{err}</div>}
       </div>
-
-      {/* Progress bars */}
-      <div className="mt-3 grid grid-cols-1 gap-1">
-        <BaseProgressBar label="Eaten 🍱" total={todayEaten} goal={goal || 2000} height="h-2" color="bg-blue-500" />
-        <BaseProgressBar label="Burned 🔥" total={todayBurned} goal={goal || 2000} height="h-2" color="bg-orange-500" />
-        <BaseProgressBar label="Net ⚖️" total={todayCals} goal={goal || 2000} height="h-2" color={todayCals < goal ? 'bg-green-500' : 'bg-red-500'} />
-      </div>
-
-      {goal && <div className="mt-2 text-xs text-gray-600">Remaining: {Math.max(goal - todayCals, 0)} kcal</div>}
-
-      {/* Helper text */}
-      {!loading && goal && <div className="mt-3 text-xs text-gray-500">{todayCals <= goal ? 'Nice! Under goal today.' : `Over goal today by ${todayCals - goal} calories`}</div>}
-      {err && <div className="mt-2 text-xs text-red-600">{err}</div>}
-    </div>
+    </>
   )
 }

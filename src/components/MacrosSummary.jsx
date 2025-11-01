@@ -157,7 +157,7 @@ export default function MacrosSummary() {
   }, [])
 
   return (
-    <div className="mx-auto mb-4 grid w-full max-w-md gap-1 md:gap-3" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+    <div className="mb-4 grid grid-cols-3 w-full max-w-md gap-1 px-4 md:gap-3">
       {err ? (
         <div className="col-span-3 text-center text-sm text-red-600">{err}</div>
       ) : (
